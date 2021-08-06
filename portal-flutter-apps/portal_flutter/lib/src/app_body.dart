@@ -5,7 +5,7 @@ import 'package:hover/hover.dart';
 
 import 'app_chat/app_chat.dart';
 
-class AppBody extends StatelessWidget {
+class AppBody extends StatefulWidget {
   const AppBody({
     Key? key,
     required this.authState,
@@ -13,42 +13,31 @@ class AppBody extends StatelessWidget {
   final AppAuthenticationState authState;
 
   @override
+  State<AppBody> createState() => _AppBodyState();
+}
+
+class _AppBodyState extends State<AppBody> {
+  late final Widget _content = ChatEngineChatPage(
+    secret: widget.authState.secret,
+    username: widget.authState.activeUser!.username,
+  );
+
+  @override
   Widget build(BuildContext context) {
-    if (authState.currentState != AuthenticationFlowState.LOGGED_IN) {
+    if (widget.authState.currentState != AuthenticationFlowState.LOGGED_IN) {
       return const SizedBox.shrink();
     }
     final mediaQuery = HoverResponsiveHelper(context);
-    return Scaffold(
-      backgroundColor: Colors.grey.shade200,
-      drawer: mediaQuery.onPhone ? _Drawer() : null,
-      body: Column(
-        children: [
-          _Header(mediaQuery: mediaQuery, authState: authState),
-          Expanded(
-            child: Row(
-              children: [
-                if (!mediaQuery.onPhone) _Drawer(),
-                Expanded(child: _Body(authState: authState)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Body extends StatelessWidget {
-  const _Body({required this.authState, Key? key}) : super(key: key);
-  final AppAuthenticationState authState;
-  @override
-  Widget build(BuildContext context) {
-    return HoverBaseCard(
+    return Container(
+      color: Colors.grey.shade200,
+      // drawer: mediaQuery.onPhone ? _Drawer() : null,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text("Welcome ${authState.activeUser!.username}"),
-          ChatEngineChat(),
+          _Header(mediaQuery: mediaQuery, authState: widget.authState),
+          Expanded(
+            child: _content,
+            // child: const SizedBox.shrink(),
+          ),
         ],
       ),
     );
@@ -201,15 +190,4 @@ class _HeaderPopupMenuItem extends PopupMenuItem<Function> {
             ],
           ),
         );
-}
-
-class _Drawer extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: Hover.getScreenHeight(context),
-      width: 350,
-      child: HoverBaseCard(),
-    );
-  }
 }

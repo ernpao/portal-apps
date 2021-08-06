@@ -4,7 +4,7 @@ import 'app_authentication_state.dart';
 
 class ChatEngineAuthFlow
     extends AppAuthenticationStateBase<ChatEngineActiveUser> {
-  ChatEngineAuthFlow() : super(authInterface: ChatEngineAPI());
+  ChatEngineAuthFlow() : super(authInterface: ChatEnginePrivateAPI());
 
   @override
   ChatEngineActiveUser createAuthenticatedUser(

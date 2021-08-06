@@ -75,6 +75,7 @@ abstract class AppAuthenticationStateBase<T extends AuthenticatedUser>
       if (_storedEncodedUser.isNotEmpty) {
         assert(_storedSecret != null && _storedSecret.isNotEmpty);
         _activeUser = loadStoredUser(_storedEncodedUser, _storedSecret!);
+        _secret = _storedSecret;
         setState(AuthenticationFlowState.LOGGED_IN);
       }
     }
