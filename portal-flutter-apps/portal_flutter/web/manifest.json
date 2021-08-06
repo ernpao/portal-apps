@@ -1,6 +1,6 @@
 {
-    "name": "glider_portal",
-    "short_name": "glider_portal",
+    "name": "portal",
+    "short_name": "portal",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

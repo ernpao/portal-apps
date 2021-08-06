@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="tech.codera.glider.portal">
    <application
-        android:label="Portal Glider Library"
+        android:label="Portal"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
