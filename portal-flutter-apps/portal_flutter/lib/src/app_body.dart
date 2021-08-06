@@ -33,7 +33,8 @@ class _AppBodyState extends State<AppBody> {
       // drawer: mediaQuery.onPhone ? _Drawer() : null,
       child: Column(
         children: [
-          _Header(mediaQuery: mediaQuery, authState: widget.authState),
+          if (_content is! ChatEngineChatPage)
+            _Header(mediaQuery: mediaQuery, authState: widget.authState),
           Expanded(
             child: _content,
             // child: const SizedBox.shrink(),
@@ -89,7 +90,7 @@ class _HeaderState extends State<_Header> {
                   _isPopupMenuOpen = true;
                 });
               },
-              color: _isPopupMenuOpen ? Colors.blue : Colors.white30,
+              color: _isPopupMenuOpen ? Colors.blue : Colors.grey.shade400,
               iconColor: Colors.white,
               iconData: Icons.menu,
             ),

@@ -21,6 +21,13 @@ class ChatEngineChatState extends ChangeNotifier {
   Chat? get selectedChat => _selectedChat;
 
   Future<List<Chat>?> fetchChats() async {
-    return [];
+    final response = await api.getMyChats();
+    final jsonArray = response.bodyAsJsonList();
+    _chats = jsonArray?.map((e) => Chat(e)).toList();
+    return _chats;
+  }
+
+  void createNewChat(String title, {bool isDirectChat = false}) async {
+    await api.createChat(title, isDirectChat: isDirectChat);
   }
 }
