@@ -1,0 +1,3 @@
+[submodule "portal-flutter-apps/glider"]
+	path = portal-flutter-apps/glider
+	url = git@github.com:ernpao/glider.git
