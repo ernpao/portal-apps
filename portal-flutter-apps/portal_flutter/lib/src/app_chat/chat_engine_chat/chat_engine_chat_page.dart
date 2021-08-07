@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:glider_portal/glider_portal.dart';
 import 'package:hover/hover.dart';
 
 import 'chat_engine_chat_state.dart';
+import 'widgets/widgets.dart';
 
 class ChatEngineChatPage extends StatelessWidget {
   ChatEngineChatPage({
@@ -26,136 +28,14 @@ class ChatEngineChatPage extends StatelessWidget {
       create: (_) => chatEngineChatState,
       child: Scaffold(
           backgroundColor: Colors.transparent,
-          drawer: mediaQuery.onPhone ? _ChatListDrawer() : null,
+          drawer: mediaQuery.onPhone ? ChatListDrawer() : null,
           body: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (!mediaQuery.onPhone) _ChatListDrawer(),
+              if (!mediaQuery.onPhone) ChatListDrawer(),
               Expanded(child: HoverBaseCard()),
             ],
           )),
-    );
-  }
-}
-
-class _ChatListDrawer extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: Hover.getScreenHeight(context),
-      width: 350,
-      child: HoverBaseCard(
-        child: Builder(builder: (context) {
-          final chatState = Provider.of<ChatEngineChatState>(context);
-          final chats = chatState.chats;
-          if (chats == null) {
-            chatState.fetchChats();
-            return const Center(child: CircularProgressIndicator());
-          }
-          return Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: chats.length,
-                  itemBuilder: (context, index) {
-                    final chat = chats[index];
-                    return HoverBaseCard(
-                      color: Colors.grey.shade200,
-                      leftMargin: 0,
-                      rightMargin: 0,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          HoverText(
-                            chat.title,
-                            leftPadding: 0,
-                            bottomPadding: 8,
-                          ),
-                          Text(
-                            chat.created.toIso8601String(),
-                            style: Theme.of(context).textTheme.caption,
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-              HoverCallToActionButton(
-                text: "Create New Chat",
-                onPressed: () => _createNewChat(context, chatState),
-                cornerRadius: 32,
-                color: Colors.blue,
-              )
-            ],
-          );
-        }),
-      ),
-    );
-  }
-
-  void _createNewChat(BuildContext context, ChatEngineChatState chatState) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        final screenWidth = Hover.getScreenWidth(context);
-        final screenHeight = Hover.getScreenHeight(context);
-        final dialogWidth = (screenWidth * 0.5).clamp(300.0, screenWidth);
-        final dialogHeight = (screenHeight * 0.5).clamp(300.0, screenHeight);
-
-        // final textFieldController = TextEditingController();
-        String? selectedUser;
-        List<String>? usernames;
-        return Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: ((screenWidth - dialogWidth) / 2),
-              vertical: ((screenHeight - dialogHeight) / 2)),
-          child: StatefulBuilder(builder: (context, stateSetter) {
-            if (usernames == null) {
-              chatState.getOtherUsers().then((usernamesFound) {
-                stateSetter(() {
-                  usernames = usernamesFound;
-                });
-              });
-            }
-
-            return HoverBaseCard(
-              width: dialogWidth,
-              child: Column(
-                children: [
-                  Autocomplete<String>(
-                    optionsMaxHeight: 100,
-                    optionsBuilder: (textEditingValue) {
-                      if (textEditingValue.text.isEmpty) {
-                        return const Iterable<String>.empty();
-                      }
-                      return (usernames ?? []).where((String option) {
-                        return option
-                            .contains(textEditingValue.text.toLowerCase());
-                      });
-                    },
-                    onSelected: (String selection) {
-                      stateSetter(() {
-                        selectedUser = selection;
-                      });
-                    },
-                  ),
-                  HoverCallToActionButton(
-                    enabled: selectedUser != null,
-                    text: "Create Chat",
-                    onPressed: () {
-                      if (selectedUser != null) {
-                        chatState.createNewChat(selectedUser!);
-                      }
-                    },
-                  ),
-                ],
-              ),
-            );
-          }),
-        );
-      },
     );
   }
 }
