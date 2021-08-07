@@ -160,9 +160,9 @@ class _HeaderState extends State<_Header> {
     },
   };
 
-  static const String _kIcon = "icon";
-  static const String _kCallback = "callback";
-  static const String _kColor = "color";
+  static const _kIcon = "icon";
+  static const _kCallback = "callback";
+  static const _kColor = "color";
 }
 
 class _HeaderPopupMenuItem extends PopupMenuItem<Function> {
