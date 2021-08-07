@@ -41,94 +41,119 @@ class ChatEngineChatPage extends StatelessWidget {
 class _ChatListDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final state = Provider.of<ChatEngineChatState>(context);
     return SizedBox(
       height: Hover.getScreenHeight(context),
       width: 350,
       child: HoverBaseCard(
-        /// TODO: Don't use FutureBuilder -> will trigger an http request
-        /// everytime the keyboard opens on mobile devices when typing.
-        child: FutureBuilder<List<Chat>?>(
-          future: state.fetchChats(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              if (snapshot.hasError) {
-                return Center(
-                    child: Text("Error: ${snapshot.error.toString()}"));
-              } else if (snapshot.hasData) {
-                final chats = snapshot.data!;
-                return Column(
-                  children: [
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: chats.length,
-                        itemBuilder: (context, index) {
-                          final chat = chats[index];
-                          return HoverBaseCard(
-                            color: Colors.grey.shade200,
-                            leftMargin: 0,
-                            rightMargin: 0,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                HoverText(
-                                  chat.title,
-                                  leftPadding: 0,
-                                  bottomPadding: 8,
-                                ),
-                                Text(
-                                  chat.created.toIso8601String(),
-                                  style: Theme.of(context).textTheme.caption,
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    TextField(controller: TextEditingController()),
-                    HoverCallToActionButton(
-                      text: "Create New Chat",
-                      onPressed: () => _createNewChat(context, state),
-                      cornerRadius: 32,
-                      color: Colors.blue,
-                    )
-                  ],
-                );
-              }
-            }
+        child: Builder(builder: (context) {
+          final chatState = Provider.of<ChatEngineChatState>(context);
+          final chats = chatState.chats;
+          if (chats == null) {
+            chatState.fetchChats();
             return const Center(child: CircularProgressIndicator());
-          },
-        ),
+          }
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: chats.length,
+                  itemBuilder: (context, index) {
+                    final chat = chats[index];
+                    return HoverBaseCard(
+                      color: Colors.grey.shade200,
+                      leftMargin: 0,
+                      rightMargin: 0,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          HoverText(
+                            chat.title,
+                            leftPadding: 0,
+                            bottomPadding: 8,
+                          ),
+                          Text(
+                            chat.created.toIso8601String(),
+                            style: Theme.of(context).textTheme.caption,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              HoverCallToActionButton(
+                text: "Create New Chat",
+                onPressed: () => _createNewChat(context, chatState),
+                cornerRadius: 32,
+                color: Colors.blue,
+              )
+            ],
+          );
+        }),
       ),
     );
   }
 
-  void _createNewChat(BuildContext context, ChatEngineChatState state) {
+  void _createNewChat(BuildContext context, ChatEngineChatState chatState) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
         final screenWidth = Hover.getScreenWidth(context);
         final screenHeight = Hover.getScreenHeight(context);
         final dialogWidth = (screenWidth * 0.5).clamp(300.0, screenWidth);
         final dialogHeight = (screenHeight * 0.5).clamp(300.0, screenHeight);
 
-        final textFieldController = TextEditingController();
-
+        // final textFieldController = TextEditingController();
+        String? selectedUser;
+        List<String>? usernames;
         return Padding(
           padding: EdgeInsets.symmetric(
               horizontal: ((screenWidth - dialogWidth) / 2),
               vertical: ((screenHeight - dialogHeight) / 2)),
-          child: HoverBaseCard(
-            width: dialogWidth,
-            child: Column(
-              children: [
-                HoverTextInput(
-                  controller: textFieldController,
-                )
-              ],
-            ),
-          ),
+          child: StatefulBuilder(builder: (context, stateSetter) {
+            if (usernames == null) {
+              chatState.getOtherUsers().then((usernamesFound) {
+                stateSetter(() {
+                  usernames = usernamesFound;
+                });
+              });
+            }
+
+            return HoverBaseCard(
+              width: dialogWidth,
+              child: Column(
+                children: [
+                  Autocomplete<String>(
+                    optionsMaxHeight: 100,
+                    optionsBuilder: (textEditingValue) {
+                      if (textEditingValue.text.isEmpty) {
+                        return const Iterable<String>.empty();
+                      }
+                      return (usernames ?? []).where((String option) {
+                        return option
+                            .contains(textEditingValue.text.toLowerCase());
+                      });
+                    },
+                    onSelected: (String selection) {
+                      stateSetter(() {
+                        selectedUser = selection;
+                      });
+                    },
+                  ),
+                  HoverCallToActionButton(
+                    enabled: selectedUser != null,
+                    text: "Create Chat",
+                    onPressed: () {
+                      if (selectedUser != null) {
+                        chatState.createNewChat(selectedUser!);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            );
+          }),
         );
       },
     );

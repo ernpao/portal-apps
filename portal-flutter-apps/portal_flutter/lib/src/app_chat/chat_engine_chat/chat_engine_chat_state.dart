@@ -11,6 +11,8 @@ class ChatEngineChatState extends ChangeNotifier {
 
   late final api = ChatEngineAPI(username: username, secret: secret);
 
+  final _privateApi = ChatEnginePrivateAPI();
+
   final String secret;
   final String username;
 
@@ -20,14 +22,32 @@ class ChatEngineChatState extends ChangeNotifier {
   Chat? _selectedChat;
   Chat? get selectedChat => _selectedChat;
 
-  Future<List<Chat>?> fetchChats() async {
+  void fetchChats() async {
     final response = await api.getMyChats();
     final jsonArray = response.bodyAsJsonList();
     _chats = jsonArray?.map((e) => Chat(e)).toList();
-    return _chats;
+    notifyListeners();
   }
 
   void createNewChat(String title, {bool isDirectChat = false}) async {
     await api.createChat(title, isDirectChat: isDirectChat);
+    notifyListeners();
+  }
+
+  Future<List<String>> getOtherUsers() async {
+    debugPrint("getOtherUsers");
+
+    final usernames = <String>[];
+    final response = await _privateApi.getUsers();
+    final jsonArray = response.bodyAsJsonList() ?? [];
+
+    for (final json in jsonArray) {
+      final user = ChatEngineUser(json);
+      if (user.username != api.username) {
+        usernames.add(user.username);
+      }
+    }
+
+    return usernames;
   }
 }
