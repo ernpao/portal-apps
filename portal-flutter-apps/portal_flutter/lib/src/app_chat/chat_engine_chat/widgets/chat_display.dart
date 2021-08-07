@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_html/shims/dart_ui_real.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:glider_portal/glider_portal.dart';
 import 'package:hover/hover.dart';
 
-import '../chat_engine_chat_state.dart';
+import 'chat_page_state.dart';
 import 'buttons.dart';
 import 'user_display.dart';
 
@@ -11,37 +13,71 @@ class ChatPreview extends StatelessWidget {
   const ChatPreview(
     this.chat, {
     Key? key,
+    this.isSelected = false,
+    this.onTap,
   }) : super(key: key);
 
   final Chat chat;
+  final bool isSelected;
+  final Function()? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return HoverBaseCard(
-      color: Colors.grey.shade200,
-      leftMargin: 0,
-      rightMargin: 0,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              HoverText(
-                chat.title,
-                leftPadding: 0,
-                bottomPadding: 8,
-                softWrap: true,
-              ),
-              Text(
-                chat.created.toLocal().formatDateTimeWithoutSeconds,
-                style: Theme.of(context).textTheme.caption,
-              ),
-            ],
-          ),
-        ],
+    return GestureDetector(
+      onTap: onTap,
+      child: HoverBaseCard(
+        color: isSelected ? Colors.grey.shade200 : null,
+        elevation: isSelected ? null : 0,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                HoverText(
+                  chat.title,
+                  leftPadding: 0,
+                  bottomPadding: 8,
+                  softWrap: true,
+                ),
+                if (chat.lastMessage.created != null)
+                  Text(
+                    chat.lastMessage.created!
+                        .toLocal()
+                        .formatDateTimeWithoutSeconds,
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+              ],
+            ),
+            _buildChatAvatar(),
+          ],
+        ),
       ),
     );
+  }
+
+  Widget _buildChatAvatar() {
+    final users = chat.people;
+
+    final avatars = <Widget>[];
+
+    final avatarsToAdd = users.length > 2 ? 2 : 1;
+
+    for (var i = 0; i < avatarsToAdd; i++) {
+      final offset = i * 20.0;
+      avatars.add(
+        Padding(
+          padding: EdgeInsets.only(
+            top: offset,
+            right: offset,
+          ),
+          child: UserAvatar(users[i].person),
+        ),
+      );
+    }
+
+    return Stack(children: avatars);
   }
 }
 
@@ -60,25 +96,34 @@ class ChatListDrawer extends StatelessWidget {
         scale: 0.8,
       ),
       child: HoverBaseCard(
-        child: Builder(builder: (context) {
-          final chatState = Provider.of<ChatEngineChatState>(context);
+        clipBehavior: Clip.antiAlias,
+        padding: 0,
+        child: ChatPageStateConsumer(builder: (context, chatState) {
           final chats = chatState.chats;
           if (chats == null) {
             return const Center(child: CircularProgressIndicator());
           }
-          return Column(
+          return Stack(
             children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: chats.length,
-                  itemBuilder: (context, index) {
-                    return ChatPreview(chats[index]);
-                  },
-                ),
+              ListView.builder(
+                itemCount: chats.length,
+                itemBuilder: (context, index) {
+                  final chat = chats[index];
+                  return ChatPreview(
+                    chat,
+                    isSelected: chatState.selectedChatId == chat.id,
+                    onTap: () => chatState.setSelectedChat(chat),
+                  );
+                },
               ),
-              CallToAction(
-                text: "Create New Chat",
-                onPressed: () => _createNewChat(context, chatState),
+              Positioned(
+                height: 80,
+                child: FloatingActionButton(
+                  onPressed: () => _createNewChat(context, chatState),
+                  child: const Icon(Icons.add),
+                ),
+                bottom: 8,
+                right: 8,
               )
             ],
           );
@@ -87,7 +132,7 @@ class ChatListDrawer extends StatelessWidget {
     );
   }
 
-  void _createNewChat(BuildContext context, ChatEngineChatState chatState) {
+  void _createNewChat(BuildContext context, ChatPageState chatState) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -106,7 +151,7 @@ class CreateNewChatDialog extends StatefulWidget {
     required this.chatState,
   }) : super(key: key);
 
-  final ChatEngineChatState chatState;
+  final ChatPageState chatState;
 
   @override
   State<CreateNewChatDialog> createState() => _CreateNewChatDialogState();
@@ -120,10 +165,7 @@ class _CreateNewChatDialogState extends State<CreateNewChatDialog> {
 
   @override
   void initState() {
-    /// Fetch other users for suggestions
-    widget.chatState.getOtherUsers().then((otherUsers) {
-      setState(() => userSuggestions = otherUsers);
-    });
+    _resetDialog();
     super.initState();
   }
 
@@ -242,19 +284,135 @@ class _CreateNewChatDialogState extends State<CreateNewChatDialog> {
     }
   }
 
+  Future<void> _resetDialog() async {
+    /// Reset suggestions and selected users
+    userSuggestions.clear();
+    selectedUsers.clear();
+
+    /// Fetch other users for suggestions
+    final otherUsers = await widget.chatState.getOtherUsers();
+    setState(() => userSuggestions = otherUsers);
+  }
+
   Future<void> _createNewChat() async {
     String title = selectedUsers.first.username;
 
-    if (selectedUsers.length > 1) {
+    final numberOfUsersToAdd = selectedUsers.length;
+
+    assert(numberOfUsersToAdd > 0);
+    if (numberOfUsersToAdd == 2) {
+      final firstUsername = selectedUsers.first.username;
+      final secondUsername = selectedUsers.last.username;
+      title = "$firstUsername and $secondUsername";
+    } else if (numberOfUsersToAdd > 2) {
       title = "${selectedUsers.first.username} and "
-          "${selectedUsers.length - 1} "
+          "${numberOfUsersToAdd - 1} "
           "others";
     }
+
     final usernamesToAdd = selectedUsers.map((user) => user.username).toList();
 
-    await widget.chatState.createNewChat(
-      title,
-      usernamesToAdd,
+    await widget.chatState.createNewChat(title, usernamesToAdd);
+  }
+}
+
+class ConversationContent extends StatelessWidget {
+  const ConversationContent({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ChatPageStateConsumer(
+      builder: (context, chatDisplayState) {
+        if (chatDisplayState.selectedChat != null) {
+          final selectedChat = chatDisplayState.selectedChat!;
+          final selectedChatMessages = chatDisplayState.selectedChatMessages;
+
+          Widget content;
+          TextEditingController messageFieldController =
+              TextEditingController();
+
+          if (selectedChatMessages == null) {
+            content = const Center(child: CircularProgressIndicator());
+          } else if (selectedChatMessages.isEmpty) {
+            content = const Center(child: Text("Start the conversation!"));
+          } else {
+            content = ListView.builder(
+              itemCount: selectedChatMessages.length,
+              itemBuilder: (context, index) {
+                final message = selectedChatMessages[index];
+                final messageIsfromMyself =
+                    message.sender.username == chatDisplayState.username;
+                return Row(
+                  mainAxisAlignment: messageIsfromMyself
+                      ? MainAxisAlignment.end
+                      : MainAxisAlignment.start,
+                  children: [
+                    Column(
+                      children: [
+                        /// TODO: add preview for attachments
+                        HoverBaseCard(
+                          padding: 8,
+                          color: messageIsfromMyself ? Colors.blue : null,
+                          child: Html(
+                            style: {
+                              "p": Style(
+                                color:
+                                    messageIsfromMyself ? Colors.white : null,
+                              )
+                            },
+                            data: message.text,
+                            shrinkWrap: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+          return Column(
+            children: [
+              Expanded(
+                child: HoverBaseCard(
+                  child: Column(
+                    children: [
+                      Column(
+                        children: [
+                          HoverTitle(
+                            selectedChat.title,
+                            topPadding: 24,
+                            bottomPadding: 8,
+                            color: Colors.blue,
+                            fontWeight: FontWeight.w900,
+                          ),
+                          if (selectedChat.lastMessage.created != null)
+                            HoverText(
+                              "Active:  ${selectedChat.lastMessage.created!.formatDateTimeWithoutSeconds}",
+                              color: Colors.grey.shade400,
+                              bottomPadding: 24.0,
+                            )
+                        ],
+                      ),
+                      Expanded(
+                        child: content,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              HoverTextInput(
+                controller: messageFieldController,
+                onSubmitted: (message) {},
+              )
+            ],
+          );
+        } else {
+          return Center(
+            child: HoverText("Select a chat to begin!"),
+          );
+        }
+      },
     );
   }
 }

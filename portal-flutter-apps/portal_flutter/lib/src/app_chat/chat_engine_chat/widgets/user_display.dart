@@ -9,13 +9,18 @@ class UserAvatar extends StatelessWidget {
   }) : super(key: key);
 
   final ChatEngineUser user;
-
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
       backgroundColor: Colors.blue,
       child: user.avatar == null
-          ? const Icon(Icons.person)
+          ? Center(
+              child: HoverText(
+                user.initials,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            )
           : const SizedBox.shrink(),
       foregroundImage: user.avatar != null ? NetworkImage(user.avatar!) : null,
     );
