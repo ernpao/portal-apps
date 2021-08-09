@@ -103,28 +103,34 @@ class ChatListDrawer extends StatelessWidget {
           if (chats == null) {
             return const Center(child: CircularProgressIndicator());
           }
-          return Stack(
+          return Column(
             children: [
-              ListView.builder(
-                itemCount: chats.length,
-                itemBuilder: (context, index) {
-                  final chat = chats[index];
-                  return ChatPreview(
-                    chat,
-                    isSelected: chatState.selectedChatId == chat.id,
-                    onTap: () => chatState.setSelectedChat(chat),
-                  );
-                },
-              ),
-              Positioned(
-                height: 80,
-                child: FloatingActionButton(
-                  onPressed: () => _createNewChat(context, chatState),
-                  child: const Icon(Icons.add),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: chats.length,
+                  itemBuilder: (context, index) {
+                    final chat = chats[index];
+                    return ChatPreview(
+                      chat,
+                      isSelected: chatState.selectedChatId == chat.id,
+                      onTap: () => chatState.setSelectedChat(chat),
+                    );
+                  },
                 ),
-                bottom: 8,
-                right: 8,
-              )
+              ),
+              // SizedBox(
+              //   height: 80,
+              //   child: FloatingActionButton(
+              //     onPressed: () => _createNewChat(context, chatState),
+              //     child: const Icon(Icons.add),
+              //   ),
+              //   bottom: 8,
+              //   right: 8,
+              // )
+              CallToAction(
+                text: "Create New Chat",
+                onPressed: () => _createNewChat(context, chatState),
+              ),
             ],
           );
         }),
