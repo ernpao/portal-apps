@@ -57,6 +57,7 @@ class _AwaitingVerificationPage extends StatelessWidget {
           body: !authState.awaitingResponse
               ? Center(
                   child: SingleChildScrollView(
+                    controller: ScrollController(),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -125,6 +126,7 @@ class _LoginPage extends StatelessWidget {
           body: !authState.awaitingResponse
               ? Center(
                   child: SingleChildScrollView(
+                    controller: ScrollController(),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -162,6 +164,7 @@ class _SignUpPage extends StatelessWidget {
           body: !authState.awaitingResponse
               ? Center(
                   child: SingleChildScrollView(
+                    controller: ScrollController(),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

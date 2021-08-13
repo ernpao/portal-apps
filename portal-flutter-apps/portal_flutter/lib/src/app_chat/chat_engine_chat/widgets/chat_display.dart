@@ -107,6 +107,7 @@ class ChatListDrawer extends StatelessWidget {
             children: [
               Expanded(
                 child: ListView.builder(
+                  controller: ScrollController(),
                   itemCount: chats.length,
                   itemBuilder: (context, index) {
                     final chat = chats[index];
@@ -261,6 +262,7 @@ class _CreateNewChatDialogState extends State<CreateNewChatDialog> {
 
             Expanded(
               child: ListView.builder(
+                controller: ScrollController(),
                 itemBuilder: (context, index) {
                   final selectedUser = selectedUsers[index];
                   return HoverBaseCard(
@@ -343,6 +345,7 @@ class ConversationContent extends StatelessWidget {
             content = const Center(child: Text("Start the conversation!"));
           } else {
             content = ListView.builder(
+              controller: ScrollController(),
               itemCount: selectedChatMessages.length,
               itemBuilder: (context, index) {
                 final message = selectedChatMessages[index];
