@@ -17,14 +17,10 @@ class ChatEngineChatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mediaQuery = HoverResponsiveHelper(context);
-    final socket = ChatEngineSocketListener(username: username, secret: secret);
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<ChatPageState>.value(
           value: ChatPageState(secret: secret, username: username),
-        ),
-        Provider<ChatEngineSocketListener>.value(
-          value: socket,
         ),
       ],
       child: Scaffold(

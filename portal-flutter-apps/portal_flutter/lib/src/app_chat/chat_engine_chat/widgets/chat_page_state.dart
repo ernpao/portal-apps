@@ -12,6 +12,8 @@ class ChatPageState extends ChangeNotifier {
 
   final _privateApi = ChatEnginePrivateAPI();
   late final _api = ChatEngineAPI(username: username, secret: secret);
+  late final _socket =
+      ChatEngineSocketListener(username: username, secret: secret);
 
   final String secret;
   final String username;
