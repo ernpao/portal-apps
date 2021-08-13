@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:glider_portal/glider_portal.dart';
-import 'app_authentication_state/app_authentication_state.dart';
+import 'auth_state/auth_state.dart';
 import 'package:hover/hover.dart';
 
-import 'app_chat/app_chat.dart';
+import 'chat/chat.dart';
 
 class AppBody extends StatefulWidget {
   const AppBody({
     Key? key,
     required this.authState,
   }) : super(key: key);
-  final AppAuthenticationState authState;
+  final AuthState authState;
 
   @override
   State<AppBody> createState() => _AppBodyState();
@@ -51,7 +51,7 @@ class _Header extends StatefulWidget {
     required this.authState,
     required this.mediaQuery,
   }) : super(key: key);
-  final AppAuthenticationState authState;
+  final AuthState authState;
 
   final HoverResponsiveHelper mediaQuery;
 
@@ -103,7 +103,7 @@ class _HeaderState extends State<_Header> {
   void _showMenu(
     BuildContext context,
     HoverResponsiveHelper mediaQuery,
-    AppAuthenticationState authState,
+    AuthState authState,
   ) async {
     final screenWidth = mediaQuery.screenWidth;
     final screenHeight = mediaQuery.screenHeight;

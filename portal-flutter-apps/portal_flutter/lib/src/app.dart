@@ -3,9 +3,9 @@ import 'package:flutter/widgets.dart';
 import 'package:glider_portal/glider_portal.dart';
 import 'package:hover/hover.dart';
 
-import 'app_authentication_state/app_authentication_state.dart';
-import 'app_authentication_state/portal_auth_flow.dart';
-import 'app_authentication_state/chat_engine_auth_flow.dart';
+import 'auth_state/auth_state.dart';
+import 'auth_state/portal_auth_flow.dart';
+import 'auth_state/chat_engine_auth_flow.dart';
 import 'app_body.dart';
 
 class App extends StatelessWidget {
@@ -21,12 +21,12 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return Application(
       providers: [
-        ChangeNotifierProvider<AppAuthenticationState>.value(
+        ChangeNotifierProvider<AuthState>.value(
           value: chatEngineAuthFlow,
         ),
       ],
       theme: HoverThemeData.light.data,
-      child: AppAuthenticationStateConsumer(
+      child: AuthStateConsumer(
         builder: (context, authState) {
           switch (authState.currentState) {
             case AuthenticationFlowState.LOGGED_IN:
@@ -51,7 +51,7 @@ class _AwaitingVerificationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppAuthenticationStateConsumer(
+    return AuthStateConsumer(
       builder: (context, authState) {
         return Scaffold(
           body: !authState.awaitingResponse
@@ -99,7 +99,7 @@ class _ErrorMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppAuthenticationStateConsumer(
+    return AuthStateConsumer(
       builder: (context, authState) {
         if (authState.hasError) {
           return HoverText(
@@ -120,7 +120,7 @@ class _LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppAuthenticationStateConsumer(
+    return AuthStateConsumer(
       builder: (context, authState) {
         return Scaffold(
           body: !authState.awaitingResponse
@@ -158,7 +158,7 @@ class _SignUpPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppAuthenticationStateConsumer(
+    return AuthStateConsumer(
       builder: (context, authState) {
         return Scaffold(
           body: !authState.awaitingResponse

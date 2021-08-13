@@ -3,8 +3,8 @@ import 'package:glider_portal/glider_portal.dart';
 import 'package:hover/hover.dart';
 
 /// Abstraction of the state management model for user authentication.
-abstract class AppAuthenticationState<T extends AuthenticatedUser>
-    extends ChangeNotifier with ActiveUser, Secret, AuthenticationFlow {
+abstract class AuthState<T extends AuthenticatedUser> extends ChangeNotifier
+    with ActiveUser, Secret, AuthenticationFlow {
   /// Indicates if the authentication flow
   /// has encountered an error.
   bool get hasError;
@@ -39,9 +39,8 @@ abstract class AppAuthenticationState<T extends AuthenticatedUser>
   String createErrorMessageOnFailedAuth(WebResponse failedLoginResponse);
 }
 
-abstract class AppAuthenticationStateBase<T extends AuthenticatedUser>
-    extends AppAuthenticationState<T> {
-  AppAuthenticationStateBase({
+abstract class AuthStateBase<T extends AuthenticatedUser> extends AuthState<T> {
+  AuthStateBase({
     required this.authInterface,
   }) {
     _loadUser();
@@ -272,20 +271,20 @@ abstract class AppAuthenticationStateBase<T extends AuthenticatedUser>
   String exceptionToErrorMessageString(Object error);
 }
 
-class AppAuthenticationStateConsumer extends StatelessWidget {
-  const AppAuthenticationStateConsumer({
+class AuthStateConsumer extends StatelessWidget {
+  const AuthStateConsumer({
     Key? key,
     required this.builder,
   }) : super(key: key);
 
   final Widget Function(
     BuildContext context,
-    AppAuthenticationState authState,
+    AuthState authState,
   ) builder;
 
   @override
   Widget build(BuildContext context) {
-    final authState = Provider.of<AppAuthenticationState>(context);
+    final authState = Provider.of<AuthState>(context);
     return builder(context, authState);
   }
 }

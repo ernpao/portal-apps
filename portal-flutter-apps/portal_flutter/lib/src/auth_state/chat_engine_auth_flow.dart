@@ -1,9 +1,8 @@
 import 'package:glider_portal/glider_portal.dart';
 
-import 'app_authentication_state.dart';
+import 'auth_state.dart';
 
-class ChatEngineAuthFlow
-    extends AppAuthenticationStateBase<ChatEngineActiveUser> {
+class ChatEngineAuthFlow extends AuthStateBase<ChatEngineActiveUser> {
   ChatEngineAuthFlow() : super(authInterface: ChatEnginePrivateAPI());
 
   @override

@@ -9,6 +9,9 @@ import 'chat_page_state.dart';
 import 'buttons.dart';
 import 'user_display.dart';
 
+/// A preview of the [Chat] details. This widget
+/// is displayed in [ChatListDrawer] to give users
+/// a preview of their chats.
 class ChatPreview extends StatelessWidget {
   const ChatPreview(
     this.chat, {
@@ -21,40 +24,64 @@ class ChatPreview extends StatelessWidget {
   final bool isSelected;
   final Function()? onTap;
 
+  Widget _buildTimestamp(BuildContext context) {
+    if (chat.lastMessage.created != null) {
+      return Text(
+        chat.lastMessage.created!.toLocal().formatDateTimeWithoutSeconds,
+        style: Theme.of(context).textTheme.caption,
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildCaption(BuildContext context, List<String> typingUsers) {
+    String text = "";
+    if (typingUsers.length == 1) {
+      text = "${typingUsers.first} is typing...";
+    } else if (typingUsers.length == 2) {
+      text = "${typingUsers.first} and ${typingUsers.last} are typing...";
+    } else if (typingUsers.length > 2) {
+      text = "Multiple users are typing...";
+    }
+
+    if (typingUsers.isEmpty || text.isEmpty) return _buildTimestamp(context);
+    return Text(
+      text,
+      style: Theme.of(context).textTheme.caption,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: HoverBaseCard(
-        color: isSelected ? Colors.grey.shade200 : null,
-        elevation: isSelected ? null : 0,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                HoverText(
-                  chat.title,
-                  leftPadding: 0,
-                  bottomPadding: 8,
-                  softWrap: true,
-                ),
-                if (chat.lastMessage.created != null)
-                  Text(
-                    chat.lastMessage.created!
-                        .toLocal()
-                        .formatDateTimeWithoutSeconds,
-                    style: Theme.of(context).textTheme.caption,
+    return ChatPageStateConsumer(builder: (context, chatPageState) {
+      final typingUsers = chatPageState.getUsersTypingInChat(chat.id);
+      return GestureDetector(
+        onTap: onTap,
+        child: HoverBaseCard(
+          color: isSelected ? Colors.grey.shade200 : null,
+          elevation: isSelected ? null : 0,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  HoverText(
+                    chat.title,
+                    leftPadding: 0,
+                    bottomPadding: 8,
+                    softWrap: true,
                   ),
-              ],
-            ),
-            _buildChatAvatar(),
-          ],
+                  _buildCaption(context, typingUsers)
+                ],
+              ),
+              _buildChatAvatar(),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildChatAvatar() {
@@ -113,8 +140,12 @@ class ChatListDrawer extends StatelessWidget {
                     final chat = chats[index];
                     return ChatPreview(
                       chat,
-                      isSelected: chatState.selectedChatId == chat.id,
-                      onTap: () => chatState.setSelectedChat(chat),
+                      isSelected: chatState.activeChatId == chat.id,
+                      onTap: () {
+                        if (chatState.activeChatId != chat.id) {
+                          chatState.setActiveChat(chat);
+                        }
+                      },
                     );
                   },
                 ),
@@ -324,28 +355,35 @@ class _CreateNewChatDialogState extends State<CreateNewChatDialog> {
   }
 }
 
+/// A widget for displaying the messages of the `activeChat` in
+/// the [ChatPageState]. Automatically updates when messages are received and
+/// sent.
 class ConversationContent extends StatelessWidget {
-  const ConversationContent({Key? key}) : super(key: key);
+  ConversationContent({Key? key}) : super(key: key);
 
+  final _conversationScrollController = ScrollController();
   @override
   Widget build(BuildContext context) {
     return ChatPageStateConsumer(
       builder: (context, chatDisplayState) {
-        if (chatDisplayState.selectedChat != null) {
-          final selectedChat = chatDisplayState.selectedChat!;
-          final selectedChatMessages = chatDisplayState.selectedChatMessages;
+        if (chatDisplayState.activeChat != null) {
+          final selectedChat = chatDisplayState.activeChat!;
+          final selectedChatMessages = chatDisplayState.activeChatMessages;
 
           Widget content;
-          TextEditingController messageFieldController =
-              TextEditingController();
+          final messageFieldController = TextEditingController();
 
           if (selectedChatMessages == null) {
             content = const Center(child: CircularProgressIndicator());
           } else if (selectedChatMessages.isEmpty) {
             content = const Center(child: Text("Start the conversation!"));
           } else {
+            Future.delayed(
+              const Duration(milliseconds: 150),
+              _scrollToEnd,
+            );
             content = ListView.builder(
-              controller: ScrollController(),
+              controller: _conversationScrollController,
               itemCount: selectedChatMessages.length,
               itemBuilder: (context, index) {
                 final message = selectedChatMessages[index];
@@ -403,9 +441,7 @@ class ConversationContent extends StatelessWidget {
                             )
                         ],
                       ),
-                      Expanded(
-                        child: content,
-                      ),
+                      Expanded(child: content),
                     ],
                   ),
                 ),
@@ -422,6 +458,15 @@ class ConversationContent extends StatelessWidget {
           );
         }
       },
+    );
+  }
+
+  void _scrollToEnd() {
+    debugPrint("Scrolling chat to end of conversation...");
+    _conversationScrollController.animateTo(
+      _conversationScrollController.position.maxScrollExtent,
+      curve: Curves.easeOut,
+      duration: const Duration(milliseconds: 150),
     );
   }
 }

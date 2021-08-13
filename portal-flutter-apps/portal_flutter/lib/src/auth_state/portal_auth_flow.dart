@@ -1,8 +1,8 @@
 import 'package:glider_portal/glider_portal.dart';
 
-import 'app_authentication_state.dart';
+import 'auth_state.dart';
 
-class PortalAuthFlow extends AppAuthenticationStateBase<PortalUser> {
+class PortalAuthFlow extends AuthStateBase<PortalUser> {
   PortalAuthFlow() : super(authInterface: PortalAuthAPI());
 
   @override

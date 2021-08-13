@@ -30,7 +30,7 @@ class ChatEngineChatPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (!mediaQuery.onPhone) const ChatListDrawer(),
-            const Expanded(child: ConversationContent()),
+            Expanded(child: ConversationContent()),
           ],
         ),
       ),
