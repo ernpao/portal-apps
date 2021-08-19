@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:glider_portal/glider_portal.dart';
 import 'package:hover/hover.dart';
 
+import 'state/state.dart';
 import 'widgets/widgets.dart';
 
 class ChatEngineChatPage extends StatelessWidget {
@@ -30,7 +31,7 @@ class ChatEngineChatPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (!mediaQuery.onPhone) const UserChatsDrawer(),
-            Expanded(child: ConversationContent()),
+            const Expanded(child: ChatArea()),
           ],
         ),
       ),

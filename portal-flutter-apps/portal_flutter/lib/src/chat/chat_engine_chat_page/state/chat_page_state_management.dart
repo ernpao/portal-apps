@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:glider_portal/glider_portal.dart';
 
-import '../widgets.dart';
 import 'caching/caching.dart';
 
 /// State management model for the Chat Engine chat page.
@@ -63,11 +62,12 @@ class ChatPageStateManagement extends ChangeNotifier {
   int? get activeChatId => _activeChat?.id;
 
   /// Set `activeChat` to `chat` and notify listeners.
-  void setActiveChat(Chat chat) {
+  Future<void> setActiveChat(Chat chat) async {
     _activeChat = chat;
     _selectedChatMessages = null;
     notifyListeners();
-    _getLatestMessagesForActiveChat();
+    await _getLatestMessagesForActiveChat();
+    await _fetchChats();
   }
 
   /// Fetch the chats for the given `username` and notify listeners.
@@ -75,6 +75,7 @@ class ChatPageStateManagement extends ChangeNotifier {
     _fetchingChats = true;
     notifyListeners();
     _chats = await _chatCache.fetchData();
+    _chats = _chats.sortByCreatedDesc().cast<Chat>();
     _fetchingChats = false;
     notifyListeners();
   }
