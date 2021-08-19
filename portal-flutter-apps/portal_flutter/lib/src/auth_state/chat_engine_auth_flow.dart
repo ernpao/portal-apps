@@ -2,25 +2,25 @@ import 'package:glider_portal/glider_portal.dart';
 
 import 'auth_state.dart';
 
-class ChatEngineAuthFlow extends AuthStateBase<ChatEngineActiveUser> {
+class ChatEngineAuthFlow extends AuthStateBase<ChatEngineUser> {
   ChatEngineAuthFlow() : super(authInterface: ChatEnginePrivateAPI());
 
   @override
-  ChatEngineActiveUser createAuthenticatedUser(
+  ChatEngineUser createAuthenticatedUser(
     JSON responseBody,
     String secret,
   ) {
-    return ChatEngineActiveUser(responseBody, secret);
+    return ChatEngineUser(responseBody, secret);
   }
 
   @override
-  ChatEngineActiveUser loadStoredUser(String encodedUserData, String secret) {
+  ChatEngineUser loadStoredUser(String encodedUserData, String secret) {
     final json = JSON.parse(encodedUserData);
-    return ChatEngineActiveUser(json, secret);
+    return ChatEngineUser(json, secret);
   }
 
   @override
-  String encodeUserForStorage(ChatEngineActiveUser user) => user.data.encode();
+  String encodeUserForStorage(ChatEngineUser user) => user.data.encode();
 
   @override
   String createErrorMessageOnFailedAuth(WebResponse failedLoginResponse) {

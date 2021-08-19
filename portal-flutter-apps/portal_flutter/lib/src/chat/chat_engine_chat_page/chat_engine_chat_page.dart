@@ -19,17 +19,17 @@ class ChatEngineChatPage extends StatelessWidget {
     final mediaQuery = HoverResponsiveHelper(context);
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<ChatPageState>.value(
-          value: ChatPageState(secret: secret, username: username),
+        ChangeNotifierProvider<ChatPageStateManagement>.value(
+          value: ChatPageStateManagement(secret: secret, username: username),
         ),
       ],
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        drawer: mediaQuery.onPhone ? const ChatListDrawer() : null,
+        drawer: mediaQuery.onPhone ? const UserChatsDrawer() : null,
         body: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (!mediaQuery.onPhone) const ChatListDrawer(),
+            if (!mediaQuery.onPhone) const UserChatsDrawer(),
             Expanded(child: ConversationContent()),
           ],
         ),

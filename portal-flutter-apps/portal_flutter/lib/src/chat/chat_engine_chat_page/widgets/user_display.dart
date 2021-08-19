@@ -8,12 +8,13 @@ class UserAvatar extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
-  final ChatEngineUser user;
+  final Person user;
   @override
   Widget build(BuildContext context) {
+    final noAvatar = user.avatar == null;
     return CircleAvatar(
-      backgroundColor: Colors.blue,
-      child: user.avatar == null
+      backgroundColor: noAvatar ? Colors.blue : Colors.transparent,
+      child: noAvatar
           ? Center(
               child: HoverText(
                 user.initials,
@@ -22,18 +23,20 @@ class UserAvatar extends StatelessWidget {
               ),
             )
           : const SizedBox.shrink(),
-      foregroundImage: user.avatar != null ? NetworkImage(user.avatar!) : null,
+      backgroundImage: noAvatar ? null : NetworkImage(user.avatar!),
     );
   }
 }
 
+/// A a tile for displaying a user's name
+/// and avatar in lists.
 class UserListTile extends StatelessWidget {
   const UserListTile(
     this.user, {
     Key? key,
   }) : super(key: key);
 
-  final ChatEngineUser user;
+  final Person user;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +58,7 @@ class UserCardTile extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
-  final ChatEngineUser user;
+  final Person user;
 
   @override
   Widget build(BuildContext context) {

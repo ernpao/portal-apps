@@ -5,23 +5,21 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:glider_portal/glider_portal.dart';
 import 'package:hover/hover.dart';
 
-import 'chat_page_state.dart';
+import 'state/state.dart';
 import 'buttons.dart';
 import 'user_display.dart';
 
 /// A preview of the [Chat] details. This widget
-/// is displayed in [ChatListDrawer] to give users
+/// is displayed in [UserChatsDrawer] to give users
 /// a preview of their chats.
 class ChatPreview extends StatelessWidget {
   const ChatPreview(
     this.chat, {
     Key? key,
-    this.isSelected = false,
     this.onTap,
   }) : super(key: key);
 
   final Chat chat;
-  final bool isSelected;
   final Function()? onTap;
 
   Widget _buildTimestamp(BuildContext context) {
@@ -55,6 +53,7 @@ class ChatPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChatPageStateConsumer(builder: (context, chatPageState) {
       final typingUsers = chatPageState.getUsersTypingInChat(chat.id);
+      final isSelected = chatPageState.activeChatId == chat.id;
       return GestureDetector(
         onTap: onTap,
         child: HoverBaseCard(
@@ -76,7 +75,7 @@ class ChatPreview extends StatelessWidget {
                   _buildCaption(context, typingUsers)
                 ],
               ),
-              _buildChatAvatar(),
+              _buildChatAvatar(chatPageState.username),
             ],
           ),
         ),
@@ -84,32 +83,40 @@ class ChatPreview extends StatelessWidget {
     });
   }
 
-  Widget _buildChatAvatar() {
+  Widget _buildChatAvatar(String currentUser) {
     final users = chat.people;
 
     final avatars = <Widget>[];
 
-    final avatarsToAdd = users.length > 2 ? 2 : 1;
+    final avatarsToAdd = users.length >= 2 ? 2 : 1;
 
-    for (var i = 0; i < avatarsToAdd; i++) {
-      final offset = i * 20.0;
-      avatars.add(
-        Padding(
-          padding: EdgeInsets.only(
+    debugPrint("Chat ID ${chat.id}: Avatars to add: $avatarsToAdd");
+    for (var i = 0; i < users.length; i++) {
+      final offset = (avatars.length) * 10.0;
+      final person = users[i].person;
+      if (person.username != currentUser && avatars.length < avatarsToAdd) {
+        debugPrint("Chat ID ${chat.id}: Adding avatar for ${person.username}");
+        avatars.add(
+          Positioned(
             top: offset,
             right: offset,
+            child: UserAvatar(users[i].person),
           ),
-          child: UserAvatar(users[i].person),
-        ),
-      );
+        );
+      }
     }
 
-    return Stack(children: avatars);
+    return Stack(
+      children: [
+        const SizedBox(width: 40, height: 40),
+        ...avatars,
+      ],
+    );
   }
 }
 
-class ChatListDrawer extends StatelessWidget {
-  const ChatListDrawer({Key? key}) : super(key: key);
+class UserChatsDrawer extends StatelessWidget {
+  const UserChatsDrawer({Key? key}) : super(key: key);
 
   static const _maxDrawerWidth = 400.0;
 
@@ -126,39 +133,22 @@ class ChatListDrawer extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         padding: 0,
         child: ChatPageStateConsumer(builder: (context, chatState) {
-          final chats = chatState.chats;
-          if (chats == null) {
+          if (chatState.fetchingChats) {
             return const Center(child: CircularProgressIndicator());
           }
+          final chats = chatState.chats;
           return Column(
             children: [
               Expanded(
-                child: ListView.builder(
-                  controller: ScrollController(),
-                  itemCount: chats.length,
-                  itemBuilder: (context, index) {
-                    final chat = chats[index];
-                    return ChatPreview(
-                      chat,
-                      isSelected: chatState.activeChatId == chat.id,
-                      onTap: () {
-                        if (chatState.activeChatId != chat.id) {
-                          chatState.setActiveChat(chat);
-                        }
-                      },
-                    );
+                child: UserChatListView(
+                  chats: chats,
+                  onItemTapped: (chat) {
+                    if (chatState.activeChatId != chat.id) {
+                      chatState.setActiveChat(chat);
+                    }
                   },
                 ),
               ),
-              // SizedBox(
-              //   height: 80,
-              //   child: FloatingActionButton(
-              //     onPressed: () => _createNewChat(context, chatState),
-              //     child: const Icon(Icons.add),
-              //   ),
-              //   bottom: 8,
-              //   right: 8,
-              // )
               CallToAction(
                 text: "Create New Chat",
                 onPressed: () => _createNewChat(context, chatState),
@@ -170,14 +160,39 @@ class ChatListDrawer extends StatelessWidget {
     );
   }
 
-  void _createNewChat(BuildContext context, ChatPageState chatState) {
+  void _createNewChat(BuildContext context, ChatPageStateManagement chatState) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) {
         return CreateNewChatDialog(
-          chatState: chatState,
+          stateManagement: chatState,
         );
+      },
+    );
+  }
+}
+
+class UserChatListView extends StatelessWidget {
+  const UserChatListView({
+    Key? key,
+    required this.chats,
+    this.onItemTapped,
+  }) : super(key: key);
+
+  final List<Chat> chats;
+  final Function(Chat chat)? onItemTapped;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      controller: ScrollController(),
+      itemCount: chats.length,
+      itemBuilder: (context, index) {
+        final chat = chats[index];
+        return ChatPreview(chat, onTap: () {
+          onItemTapped?.call(chat);
+        });
       },
     );
   }
@@ -186,10 +201,10 @@ class ChatListDrawer extends StatelessWidget {
 class CreateNewChatDialog extends StatefulWidget {
   const CreateNewChatDialog({
     Key? key,
-    required this.chatState,
+    required this.stateManagement,
   }) : super(key: key);
 
-  final ChatPageState chatState;
+  final ChatPageStateManagement stateManagement;
 
   @override
   State<CreateNewChatDialog> createState() => _CreateNewChatDialogState();
@@ -197,8 +212,8 @@ class CreateNewChatDialog extends StatefulWidget {
 
 class _CreateNewChatDialogState extends State<CreateNewChatDialog> {
   /// Dialog state variables
-  List<ChatEngineUser> selectedUsers = [];
-  List<ChatEngineUser> userSuggestions = [];
+  People selectedUsers = [];
+  People userSuggestions = [];
   bool awaitingResponse = false;
 
   @override
@@ -207,7 +222,7 @@ class _CreateNewChatDialogState extends State<CreateNewChatDialog> {
     super.initState();
   }
 
-  List<ChatEngineUser> _getUsernameSuggestions(String pattern) {
+  People _getUsernameSuggestions(String pattern) {
     if (pattern.isEmpty) {
       return userSuggestions;
     } else {
@@ -268,7 +283,7 @@ class _CreateNewChatDialogState extends State<CreateNewChatDialog> {
 
             HoverBaseCard(
               color: Colors.grey.shade200,
-              child: TypeAheadField<ChatEngineUser>(
+              child: TypeAheadField<Person>(
                 suggestionsBoxDecoration: SuggestionsBoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -318,7 +333,7 @@ class _CreateNewChatDialogState extends State<CreateNewChatDialog> {
   void _onCreateChatButtonPresed() async {
     if (selectedUsers.isNotEmpty) {
       setState(() => awaitingResponse = true);
-      await _createNewChat();
+      await _sendRequestToCreateNewChat();
       Navigator.of(context).pop();
     }
   }
@@ -329,11 +344,12 @@ class _CreateNewChatDialogState extends State<CreateNewChatDialog> {
     selectedUsers.clear();
 
     /// Fetch other users for suggestions
-    final otherUsers = await widget.chatState.getOtherUsers();
+    final otherUsers = await widget.stateManagement.getOtherUsers();
     setState(() => userSuggestions = otherUsers);
   }
 
-  Future<void> _createNewChat() async {
+  /// Use the API to send a request to create a new chat.
+  Future<void> _sendRequestToCreateNewChat() async {
     String title = selectedUsers.first.username;
 
     final numberOfUsersToAdd = selectedUsers.length;
@@ -351,12 +367,12 @@ class _CreateNewChatDialogState extends State<CreateNewChatDialog> {
 
     final usernamesToAdd = selectedUsers.map((user) => user.username).toList();
 
-    await widget.chatState.createNewChat(title, usernamesToAdd);
+    await widget.stateManagement.createNewChat(title, usernamesToAdd);
   }
 }
 
 /// A widget for displaying the messages of the `activeChat` in
-/// the [ChatPageState]. Automatically updates when messages are received and
+/// the [ChatPageStateManagement]. Automatically updates when messages are received and
 /// sent.
 class ConversationContent extends StatelessWidget {
   ConversationContent({Key? key}) : super(key: key);
@@ -398,17 +414,28 @@ class ConversationContent extends StatelessWidget {
                       children: [
                         /// TODO: add preview for attachments
                         HoverBaseCard(
-                          padding: 8,
+                          leftPadding: 8,
+                          rightPadding: 8,
+                          topPadding: 2,
+                          bottomPadding: 2,
                           color: messageIsfromMyself ? Colors.blue : null,
-                          child: Html(
-                            style: {
-                              "p": Style(
-                                color:
-                                    messageIsfromMyself ? Colors.white : null,
-                              )
-                            },
-                            data: message.text,
-                            shrinkWrap: true,
+                          elevation: 4,
+                          child: Row(
+                            children: [
+                              if (!messageIsfromMyself)
+                                UserAvatar(message.sender),
+                              Html(
+                                style: {
+                                  "*": Style(
+                                    color: messageIsfromMyself
+                                        ? Colors.white
+                                        : Colors.black,
+                                  )
+                                },
+                                data: message.text,
+                                shrinkWrap: true,
+                              ),
+                            ],
                           ),
                         ),
                       ],
