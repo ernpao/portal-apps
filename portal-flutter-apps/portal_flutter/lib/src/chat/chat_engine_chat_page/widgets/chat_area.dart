@@ -90,12 +90,12 @@ class ChatPreview extends StatelessWidget {
 
     final avatarsToAdd = users.length >= 2 ? 2 : 1;
 
-    debugPrint("Chat ID ${chat.id}: Avatars to add: $avatarsToAdd");
+    // debugPrint("Chat ID ${chat.id}: Avatars to add: $avatarsToAdd");
     for (var i = 0; i < users.length; i++) {
       final offset = (avatars.length) * 10.0;
       final person = users[i].person;
       if (person.username != currentUser && avatars.length < avatarsToAdd) {
-        debugPrint("Chat ID ${chat.id}: Adding avatar for ${person.username}");
+        // debugPrint("Chat ID ${chat.id}: Adding avatar for ${person.username}");
         avatars.add(
           Positioned(
             top: offset,
@@ -233,10 +233,7 @@ class ChatArea extends StatelessWidget {
                   ),
                 ),
               ),
-              HoverTextInput(
-                controller: TextEditingController(),
-                onSubmitted: (message) {},
-              )
+              _ChatAreaTextField(),
             ],
           );
         } else {
@@ -244,6 +241,42 @@ class ChatArea extends StatelessWidget {
             child: HoverText("Select a chat to begin!"),
           );
         }
+      },
+    );
+  }
+}
+
+class _ChatAreaTextField extends StatefulWidget {
+  const _ChatAreaTextField({Key? key}) : super(key: key);
+
+  @override
+  State<_ChatAreaTextField> createState() => _ChatAreaTextFieldState();
+}
+
+class _ChatAreaTextFieldState extends State<_ChatAreaTextField> {
+  final _controller = TextEditingController();
+  final _focusNode = FocusNode();
+
+  bool _awaitingResponse = false;
+
+  @override
+  Widget build(BuildContext context) {
+    _focusNode.requestFocus();
+    return ChatPageStateConsumer(
+      builder: (context, stateManager) {
+        return HoverTextInput(
+          enabled: !_awaitingResponse,
+          controller: _controller,
+          focusNode: _focusNode,
+          backgroundColor:
+              _awaitingResponse ? Colors.grey.shade200 : Colors.white,
+          clearOnSubmit: true,
+          onSubmitted: (message) async {
+            setState(() => _awaitingResponse = true);
+            await stateManager.sendTextMessage(message);
+            setState(() => _awaitingResponse = false);
+          },
+        );
       },
     );
   }
@@ -347,7 +380,6 @@ class _ChatAreaMessages extends StatelessWidget {
   }
 
   void _scrollToEnd() {
-    debugPrint("Scrolling chat to end of conversation...");
     _conversationScrollController.animateTo(
       _conversationScrollController.position.maxScrollExtent,
       curve: Curves.easeOut,

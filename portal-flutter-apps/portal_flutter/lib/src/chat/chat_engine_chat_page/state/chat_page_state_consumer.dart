@@ -11,12 +11,12 @@ class ChatPageStateConsumer extends StatelessWidget {
 
   final Widget Function(
     BuildContext context,
-    ChatPageStateManagement chatDisplayState,
+    ChatPageStateManagement stateManager,
   ) builder;
 
   @override
   Widget build(BuildContext context) {
-    final chatDisplayState = Provider.of<ChatPageStateManagement>(context);
-    return builder(context, chatDisplayState);
+    final stateManager = Provider.of<ChatPageStateManagement>(context);
+    return builder(context, stateManager);
   }
 }

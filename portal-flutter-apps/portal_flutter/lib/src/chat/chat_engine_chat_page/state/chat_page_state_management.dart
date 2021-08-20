@@ -106,10 +106,19 @@ class ChatPageStateManagement extends ChangeNotifier {
   /// Fetch the chat messages for `activeChat`
   Future<void> _getLatestMessagesForActiveChat() async {
     if (activeChatId != null) {
-      final response = await _api.getLatestChatMessages(activeChatId!, 10);
+      // final response = await _api.getLatestChatMessages(activeChatId!, 10);
+      final response = await _api.getChatMessages(activeChatId!);
       _selectedChatMessages = Message.messagesFromWebResponse(response);
       notifyListeners();
     }
+  }
+
+  /// Send a message to the active chat.
+  Future<void> sendTextMessage(String message) async {
+    if (activeChatId != null) {
+      await _api.sendChatMessage(activeChatId!, text: message);
+    }
+    notifyListeners();
   }
 
   Future<People> getOtherUsers() async {
