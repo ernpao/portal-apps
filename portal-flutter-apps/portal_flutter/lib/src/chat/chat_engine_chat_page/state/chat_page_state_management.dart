@@ -57,6 +57,7 @@ class ChatPageStateManagement extends ChangeNotifier {
   /// that is to be displayed on the chat page.
   Chat? get activeChat => _activeChat;
   Chat? _activeChat;
+  bool get withActiveChat => activeChat != null;
 
   /// The id of the `activeChat`.
   int? get activeChatId => _activeChat?.id;
@@ -68,6 +69,16 @@ class ChatPageStateManagement extends ChangeNotifier {
     notifyListeners();
     await _getLatestMessagesForActiveChat();
     await _fetchChats();
+  }
+
+  Future<People> getActiveChatMembers() async {
+    if (activeChatId != null) {
+      final people = (await _chatCache.fetchValue(activeChatId!))?.people;
+      final members = people?.map((member) => member.person).toList();
+
+      return members ?? [];
+    }
+    return [];
   }
 
   /// Fetch the chats for the given `username` and notify listeners.

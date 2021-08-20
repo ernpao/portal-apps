@@ -10,10 +10,10 @@ import 'create_new_chat_modal.dart';
 import 'user_info.dart';
 
 /// A preview of the [Chat] details. This widget
-/// is displayed in [UserChatsDrawer] to give users
+/// is displayed in [ChatListDrawer] to give users
 /// a preview of their chats.
-class ChatPreview extends StatelessWidget {
-  const ChatPreview(
+class _UserChatsListTile extends StatelessWidget {
+  const _UserChatsListTile(
     this.chat, {
     Key? key,
     this.onTap,
@@ -23,10 +23,22 @@ class ChatPreview extends StatelessWidget {
   final Function()? onTap;
 
   Widget _buildTimestamp(BuildContext context) {
-    if (chat.lastMessage.created != null) {
-      return Text(
-        chat.lastMessage.created!.toLocal().formatDateTimeWithoutSeconds,
-        style: Theme.of(context).textTheme.caption,
+    final lastMessage = chat.lastMessage;
+    if (lastMessage.created != null) {
+      final timestamp =
+          lastMessage.created!.toLocal().formatDateTimeWithoutSeconds;
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            lastMessage.text,
+            style: Theme.of(context).textTheme.caption,
+          ),
+          Text(
+            timestamp,
+            style: Theme.of(context).textTheme.caption,
+          ),
+        ],
       );
     }
     return const SizedBox.shrink();
@@ -61,21 +73,24 @@ class ChatPreview extends StatelessWidget {
           elevation: isSelected ? null : 0,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  HoverText(
-                    chat.title,
-                    leftPadding: 0,
-                    bottomPadding: 8,
-                    softWrap: true,
-                  ),
-                  _buildCaption(context, typingUsers)
-                ],
-              ),
               _buildChatAvatar(chatPageState.username),
+              const SizedBox(width: 24),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    HoverText(
+                      chat.title,
+                      leftPadding: 0,
+                      bottomPadding: 8,
+                      softWrap: true,
+                    ),
+                    _buildCaption(context, typingUsers)
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -84,23 +99,24 @@ class ChatPreview extends StatelessWidget {
   }
 
   Widget _buildChatAvatar(String currentUser) {
-    final users = chat.people;
+    final members = chat.people;
 
     final avatars = <Widget>[];
 
-    final avatarsToAdd = users.length >= 2 ? 2 : 1;
+    final avatarsToAdd = members.length >= 2 ? 2 : 1;
 
-    // debugPrint("Chat ID ${chat.id}: Avatars to add: $avatarsToAdd");
-    for (var i = 0; i < users.length; i++) {
+    log("Chat ID ${chat.id}: Avatars to add: $avatarsToAdd");
+    for (var i = 0; i < members.length; i++) {
       final offset = (avatars.length) * 10.0;
-      final person = users[i].person;
-      if (person.username != currentUser && avatars.length < avatarsToAdd) {
-        // debugPrint("Chat ID ${chat.id}: Adding avatar for ${person.username}");
+      final member = members[i].person;
+      final memberIsCurrentUser = member.username != currentUser;
+      if (memberIsCurrentUser && avatars.length < avatarsToAdd) {
+        log("Chat ID ${chat.id}: Adding avatar for ${member.username}");
         avatars.add(
           Positioned(
             top: offset,
             right: offset,
-            child: UserAvatar(users[i].person),
+            child: UserAvatar(members[i].person),
           ),
         );
       }
@@ -115,62 +131,142 @@ class ChatPreview extends StatelessWidget {
   }
 }
 
-class UserChatsDrawer extends StatelessWidget {
-  const UserChatsDrawer({Key? key}) : super(key: key);
+class _BaseDrawer extends StatelessWidget {
+  const _BaseDrawer({
+    Key? key,
+    this.child,
+  }) : super(key: key);
 
   static const _maxDrawerWidth = 400.0;
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
-    final dimensionsHelper = HoverResponsiveHelper(context);
+    final helper = HoverResponsiveHelper(context);
+    final onMobile = helper.onMobile;
+    final screenWidth = helper.screenWidth;
     return SizedBox(
-      height: dimensionsHelper.screenHeight,
-      width: dimensionsHelper.clampedScreenWidth(
-        upperLimit: _maxDrawerWidth,
-        scale: 0.8,
+      height: helper.screenHeight,
+      width: helper.clampedScreenWidth(
+        upperLimit: onMobile ? screenWidth : _maxDrawerWidth,
       ),
       child: HoverBaseCard(
         clipBehavior: Clip.antiAlias,
         padding: 0,
-        child: ChatPageStateConsumer(builder: (context, stateManager) {
-          if (stateManager.fetchingChats) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final chats = stateManager.chats;
-          return Column(
-            children: [
-              Expanded(
-                child: UserChatsListView(
-                  chats: chats,
-                  onItemTapped: (chat) {
-                    if (stateManager.activeChatId != chat.id) {
-                      stateManager.setActiveChat(chat);
-                    }
-                  },
-                ),
-              ),
-              CallToAction(
-                text: "Create New Chat",
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (_) => CreateNewChatModal(
-                      stateManager: stateManager,
-                    ),
-                  );
-                },
-              ),
-            ],
-          );
-        }),
+        child: child ?? const SizedBox.shrink(),
       ),
     );
   }
 }
 
-class UserChatsListView extends StatelessWidget {
-  const UserChatsListView({
+class ChatSettingsDrawer extends StatelessWidget {
+  const ChatSettingsDrawer({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ChatPageStateConsumer(
+      builder: (context, stateManager) {
+        final activeChat = stateManager.activeChat;
+        if (activeChat == null) {
+          return const SizedBox.shrink();
+        } else {
+          return _BaseDrawer(
+            child: Column(
+              children: [
+                HoverTitle(
+                  "Members",
+                  topPadding: 24,
+                  bottomPadding: 8,
+                  fontWeight: FontWeight.w900,
+                ),
+                // SelectableText(activeChat.id.toString()),
+                const Expanded(
+                  child: _ChatMembersListView(),
+                ),
+              ],
+            ),
+          );
+        }
+      },
+    );
+  }
+}
+
+class _ChatMembersListView extends StatelessWidget {
+  const _ChatMembersListView({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ChatPageStateConsumer(
+      builder: (context, stateManager) {
+        return FutureBuilder<People>(
+          future: stateManager.getActiveChatMembers(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              if (snapshot.hasData) {
+                final members = snapshot.data!;
+                return ListView.builder(
+                  itemCount: members.length,
+                  itemBuilder: (context, i) {
+                    return UserListTile(members[i]);
+                  },
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+            }
+            return const Center(child: CircularProgressIndicator());
+          },
+        );
+      },
+    );
+  }
+}
+
+class ChatListDrawer extends StatelessWidget {
+  const ChatListDrawer({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return _BaseDrawer(
+      child: ChatPageStateConsumer(builder: (context, stateManager) {
+        if (stateManager.fetchingChats) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final chats = stateManager.chats;
+        return Column(
+          children: [
+            Expanded(
+              child: _UserChatsListView(
+                chats: chats,
+                onItemTapped: (chat) {
+                  if (stateManager.activeChatId != chat.id) {
+                    stateManager.setActiveChat(chat);
+                  }
+                },
+              ),
+            ),
+            CallToAction(
+              text: "Create New Chat",
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => CreateNewChatModal(
+                    stateManager: stateManager,
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      }),
+    );
+  }
+}
+
+class _UserChatsListView extends StatelessWidget {
+  const _UserChatsListView({
     Key? key,
     required this.chats,
     this.onItemTapped,
@@ -181,13 +277,17 @@ class UserChatsListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final helper = HoverResponsiveHelper(context);
     return ListView.builder(
       controller: ScrollController(),
       itemCount: chats.length,
       itemBuilder: (context, index) {
         final chat = chats[index];
-        return ChatPreview(chat, onTap: () {
+        return _UserChatsListTile(chat, onTap: () {
           onItemTapped?.call(chat);
+          if (helper.onMobile) {
+            Hover.closeDrawer(context);
+          }
         });
       },
     );
@@ -215,7 +315,7 @@ class ChatArea extends StatelessWidget {
           } else if (activeChatMessages.isEmpty) {
             content = const Center(child: Text("Start the conversation!"));
           } else {
-            content = _ChatAreaMessages(
+            content = _ChatAreaMessagesListView(
               messages: activeChatMessages,
               myUsername: stateManager.username,
             );
@@ -233,7 +333,7 @@ class ChatArea extends StatelessWidget {
                   ),
                 ),
               ),
-              _ChatAreaTextField(),
+              const _ChatAreaTextField(),
             ],
           );
         } else {
@@ -261,7 +361,14 @@ class _ChatAreaTextFieldState extends State<_ChatAreaTextField> {
 
   @override
   Widget build(BuildContext context) {
-    _focusNode.requestFocus();
+    final helper = HoverResponsiveHelper(context);
+
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      if (helper.onDesktop) {
+        _focusNode.requestFocus();
+      }
+    });
+
     return ChatPageStateConsumer(
       builder: (context, stateManager) {
         return HoverTextInput(
@@ -272,9 +379,11 @@ class _ChatAreaTextFieldState extends State<_ChatAreaTextField> {
               _awaitingResponse ? Colors.grey.shade200 : Colors.white,
           clearOnSubmit: true,
           onSubmitted: (message) async {
-            setState(() => _awaitingResponse = true);
-            await stateManager.sendTextMessage(message);
-            setState(() => _awaitingResponse = false);
+            if (message.isNotEmpty) {
+              setState(() => _awaitingResponse = true);
+              await stateManager.sendTextMessage(message);
+              setState(() => _awaitingResponse = false);
+            }
           },
         );
       },
@@ -313,8 +422,8 @@ class _ChatAreaHeading extends StatelessWidget {
   }
 }
 
-class _ChatAreaMessages extends StatelessWidget {
-  _ChatAreaMessages({
+class _ChatAreaMessagesListView extends StatelessWidget {
+  _ChatAreaMessagesListView({
     required this.messages,
     required this.myUsername,
     Key? key,
@@ -329,10 +438,12 @@ class _ChatAreaMessages extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Future.delayed(
-      const Duration(milliseconds: 150),
-      _scrollToEnd,
-    );
+    // Future.delayed(
+    //   const Duration(milliseconds: 500),
+    //   _scrollToEnd,
+    // );
+
+    WidgetsBinding.instance?.addPostFrameCallback((_) => _scrollToEnd());
     return ListView.builder(
       controller: _conversationScrollController,
       itemCount: messages.length,

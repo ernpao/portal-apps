@@ -1,0 +1,125 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "portal_flutter",
+            "cwd": "portal_flutter",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "portal_flutter (profile mode)",
+            "cwd": "portal_flutter",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "glider",
+            "cwd": "glider\\glider",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "glider (profile mode)",
+            "cwd": "glider\\glider",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "glider_keynote",
+            "cwd": "glider\\glider_keynote",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "glider_keynote (profile mode)",
+            "cwd": "glider\\glider_keynote",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "glider_ml",
+            "cwd": "glider\\glider_ml",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "glider_ml (profile mode)",
+            "cwd": "glider\\glider_ml",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "glider_models",
+            "cwd": "glider\\glider_models",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "glider_models (profile mode)",
+            "cwd": "glider\\glider_models",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "glider_portal",
+            "cwd": "glider\\glider_portal",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "glider_portal (profile mode)",
+            "cwd": "glider\\glider_portal",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "glider_sensors",
+            "cwd": "glider\\glider_sensors",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "glider_sensors (profile mode)",
+            "cwd": "glider\\glider_sensors",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "glider_webtop",
+            "cwd": "glider\\glider_webtop",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "glider_webtop (profile mode)",
+            "cwd": "glider\\glider_webtop",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "hover",
+            "cwd": "glider\\hover",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "hover (profile mode)",
+            "cwd": "glider\\hover",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        }
+    ]
+}

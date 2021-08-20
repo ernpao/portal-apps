@@ -81,7 +81,7 @@ class _HeaderState extends State<_Header> {
               width: widget.mediaQuery.onPhone
                   ? 0
                   : (Hover.getScreenWidth(context) -
-                      HoverResponsiveHelper.defaultBreakpointForPhones),
+                      HoverResponsiveHelper.defaultPhoneBreakpoint),
             ),
             HoverCircleIconButton(
               onTap: () {
