@@ -75,13 +75,13 @@ class ChatPageStateManagement extends ChangeNotifier {
     _fetchingChats = true;
     notifyListeners();
     _chats = await _chatCache.fetchData();
-    _chats = _chats.sortByCreatedDesc().cast<Chat>();
+    _chats = _chats.sortByMostRecentActivity();
     _fetchingChats = false;
     notifyListeners();
   }
 
   /// A list of the current user's chats.
-  Chats get chats => _chats;
+  Chats get chats => _chats.sortByMostRecentActivity();
   Chats _chats = [];
   bool _fetchingChats = true;
   bool get fetchingChats => _fetchingChats;
@@ -118,6 +118,7 @@ class ChatPageStateManagement extends ChangeNotifier {
     if (activeChatId != null) {
       await _api.sendChatMessage(activeChatId!, text: message);
     }
+    _fetchChats();
     notifyListeners();
   }
 
