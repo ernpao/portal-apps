@@ -63,12 +63,17 @@ class ChatPageStateManagement extends ChangeNotifier {
   int? get activeChatId => _activeChat?.id;
 
   /// Set `activeChat` to `chat` and notify listeners.
-  Future<void> setActiveChat(Chat chat) async {
+  Future<void> setActiveChat(Chat? chat) async {
     _activeChat = chat;
     _selectedChatMessages = null;
     notifyListeners();
+
     await _getLatestMessagesForActiveChat();
     await _fetchChats();
+  }
+
+  Future<void> _clearActiveChat() {
+    return setActiveChat(null);
   }
 
   Future<People> getActiveChatMembers() async {
@@ -117,7 +122,6 @@ class ChatPageStateManagement extends ChangeNotifier {
   /// Fetch the chat messages for `activeChat`
   Future<void> _getLatestMessagesForActiveChat() async {
     if (activeChatId != null) {
-      // final response = await _api.getLatestChatMessages(activeChatId!, 10);
       final response = await _api.getChatMessages(activeChatId!);
       _selectedChatMessages = Message.messagesFromWebResponse(response);
       notifyListeners();
@@ -136,5 +140,13 @@ class ChatPageStateManagement extends ChangeNotifier {
   Future<People> getOtherUsers() async {
     final usernames = await _usersCache.fetchData();
     return usernames.where((user) => user.username != username).toList();
+  }
+
+  Future<void> deleteActiveChat() async {
+    if (withActiveChat) {
+      await _api.deleteChat(activeChatId!);
+      _chatCache.deleteValue(activeChatId!);
+      await _clearActiveChat();
+    }
   }
 }

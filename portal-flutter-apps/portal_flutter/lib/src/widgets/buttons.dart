@@ -25,3 +25,27 @@ class CallToAction extends StatelessWidget {
     );
   }
 }
+
+class CancelAction extends StatelessWidget {
+  const CancelAction({
+    Key? key,
+    this.text = "Cancel",
+    this.onPressed,
+    this.enabled = true,
+  }) : super(key: key);
+
+  final String text;
+  final Function()? onPressed;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    return HoverCallToActionButton(
+      cornerRadius: _buttonBorderRadius,
+      color: Colors.orangeAccent,
+      enabled: enabled,
+      text: text,
+      onPressed: onPressed,
+    );
+  }
+}

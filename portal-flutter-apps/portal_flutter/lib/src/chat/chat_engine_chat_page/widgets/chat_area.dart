@@ -30,7 +30,7 @@ class _UserChatsListTile extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            lastMessage.text,
+            lastMessage.text.truncate(20),
             style: Theme.of(context).textTheme.caption,
           ),
           Text(
@@ -159,6 +159,33 @@ class ChatSettingsDrawer extends StatelessWidget {
                 // SelectableText(activeChat.id.toString()),
                 const Expanded(
                   child: _ChatMembersListView(),
+                ),
+                CallToAction(
+                  text: "Delete Chat",
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) {
+                        return BaseConfirmationDialog(
+                          height: 200,
+                          children: [
+                            HoverHeading("Delete Chat"),
+                            HoverText(
+                              "Are you sure you want to delete this chat?",
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                          onConfirm: () async {
+                            return stateManager.deleteActiveChat();
+                          },
+                          onComplete: () async {
+                            Navigator.of(context).pop();
+                          },
+                        );
+                      },
+                    );
+                  },
                 ),
               ],
             ),
@@ -427,6 +454,9 @@ class _ChatAreaMessagesListView extends StatelessWidget {
       itemBuilder: (context, index) {
         final message = messages[index];
         final messageIsfromMyself = message.sender.username == myUsername;
+
+        if (message.text.isEmpty) return const SizedBox.shrink();
+
         return Row(
           mainAxisAlignment: messageIsfromMyself
               ? MainAxisAlignment.end
@@ -435,6 +465,7 @@ class _ChatAreaMessagesListView extends StatelessWidget {
             Column(
               children: [
                 /// TODO: add preview for attachments
+                /// TODO: sanitize HTML
                 HoverBaseCard(
                   leftPadding: 8,
                   rightPadding: 8,

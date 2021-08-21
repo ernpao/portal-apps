@@ -9,6 +9,10 @@ abstract class Cache<K, V> {
   /// Store a `value` in the cache with the
   /// given `key`.
   void cacheValue(K key, V? value);
+
+  /// Delete the value
+  /// cached with the given `key`.
+  void deleteValue(K key);
 }
 
 /// A cache for lists of items as opposed to a single
@@ -36,6 +40,11 @@ abstract class AbstractCache<K, V> implements Cache<K, V> {
     } else {
       return cachedValue;
     }
+  }
+
+  @override
+  void deleteValue(K key) {
+    _cache.remove(key);
   }
 
   @protected
