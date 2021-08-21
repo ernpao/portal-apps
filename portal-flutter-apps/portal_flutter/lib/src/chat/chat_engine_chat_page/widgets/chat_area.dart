@@ -22,7 +22,7 @@ class _UserChatsListTile extends StatelessWidget {
   final Chat chat;
   final Function()? onTap;
 
-  Widget _buildTimestamp(BuildContext context) {
+  Widget _buildLastMessageText(BuildContext context) {
     final lastMessage = chat.lastMessage;
     if (lastMessage.created != null) {
       final timestamp =
@@ -40,25 +40,32 @@ class _UserChatsListTile extends StatelessWidget {
           ),
         ],
       );
+    } else {
+      return Text(
+        "Start the conversation!",
+        style: Theme.of(context).textTheme.caption,
+      );
     }
-    return const SizedBox.shrink();
   }
 
   Widget _buildCaption(BuildContext context, List<String> typingUsers) {
-    String text = "";
-    if (typingUsers.length == 1) {
-      text = "${typingUsers.first} is typing...";
-    } else if (typingUsers.length == 2) {
-      text = "${typingUsers.first} and ${typingUsers.last} are typing...";
-    } else if (typingUsers.length > 2) {
-      text = "Multiple users are typing...";
+    if (typingUsers.isNotEmpty) {
+      String text = "";
+      if (typingUsers.length == 1) {
+        text = "${typingUsers.first} is typing...";
+      } else if (typingUsers.length == 2) {
+        text = "${typingUsers.first} and ${typingUsers.last} are typing...";
+      } else if (typingUsers.length > 2) {
+        text = "Multiple users are typing...";
+      }
+      assert(text.isNotEmpty);
+      return Text(
+        text,
+        style: Theme.of(context).textTheme.caption,
+      );
+    } else {
+      return _buildLastMessageText(context);
     }
-
-    if (typingUsers.isEmpty || text.isEmpty) return _buildTimestamp(context);
-    return Text(
-      text,
-      style: Theme.of(context).textTheme.caption,
-    );
   }
 
   @override
@@ -73,7 +80,6 @@ class _UserChatsListTile extends StatelessWidget {
           elevation: isSelected ? null : 0,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
-            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildChatAvatar(chatPageState.username),
               const SizedBox(width: 24),
@@ -105,13 +111,13 @@ class _UserChatsListTile extends StatelessWidget {
 
     final avatarsToAdd = members.length >= 2 ? 2 : 1;
 
-    log("Chat ID ${chat.id}: Avatars to add: $avatarsToAdd");
+    // log("Chat ID ${chat.id}: Avatars to add: $avatarsToAdd");
     for (var i = 0; i < members.length; i++) {
       final offset = (avatars.length) * 10.0;
       final member = members[i].person;
       final memberIsCurrentUser = member.username != currentUser;
       if (memberIsCurrentUser && avatars.length < avatarsToAdd) {
-        log("Chat ID ${chat.id}: Adding avatar for ${member.username}");
+        // log("Chat ID ${chat.id}: Adding avatar for ${member.username}");
         avatars.add(
           Positioned(
             top: offset,
