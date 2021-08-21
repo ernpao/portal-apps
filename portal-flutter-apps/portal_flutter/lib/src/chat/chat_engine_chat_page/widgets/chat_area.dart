@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:flutter_html/shims/dart_ui_real.dart';
 import 'package:glider_portal/glider_portal.dart';
 import 'package:hover/hover.dart';
 
@@ -137,34 +136,6 @@ class _UserChatsListTile extends StatelessWidget {
   }
 }
 
-class _BaseDrawer extends StatelessWidget {
-  const _BaseDrawer({
-    Key? key,
-    this.child,
-  }) : super(key: key);
-
-  static const _maxDrawerWidth = 400.0;
-  final Widget? child;
-
-  @override
-  Widget build(BuildContext context) {
-    final helper = HoverResponsiveHelper(context);
-    final onMobile = helper.onMobile;
-    final screenWidth = helper.screenWidth;
-    return SizedBox(
-      height: helper.screenHeight,
-      width: helper.clampedScreenWidth(
-        upperLimit: onMobile ? screenWidth : _maxDrawerWidth,
-      ),
-      child: HoverBaseCard(
-        clipBehavior: Clip.antiAlias,
-        padding: 0,
-        child: child ?? const SizedBox.shrink(),
-      ),
-    );
-  }
-}
-
 class ChatSettingsDrawer extends StatelessWidget {
   const ChatSettingsDrawer({Key? key}) : super(key: key);
 
@@ -176,7 +147,7 @@ class ChatSettingsDrawer extends StatelessWidget {
         if (activeChat == null) {
           return const SizedBox.shrink();
         } else {
-          return _BaseDrawer(
+          return BaseDrawer(
             child: Column(
               children: [
                 HoverTitle(
@@ -234,7 +205,7 @@ class ChatListDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _BaseDrawer(
+    return BaseDrawer(
       child: ChatPageStateConsumer(builder: (context, stateManager) {
         if (stateManager.fetchingChats) {
           return const Center(child: CircularProgressIndicator());
