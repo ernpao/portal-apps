@@ -442,11 +442,6 @@ class _ChatAreaMessagesListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Future.delayed(
-    //   const Duration(milliseconds: 500),
-    //   _scrollToEnd,
-    // );
-
     WidgetsBinding.instance?.addPostFrameCallback((_) => _scrollToEnd());
     return ListView.builder(
       controller: _conversationScrollController,
