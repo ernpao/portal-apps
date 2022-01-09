@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-import 'src/app.dart';
+import 'src/portal_flutter.dart';
 
 main() {
-  runApp(App());
+  runApp(PortalFlutter());
 }

@@ -5,10 +5,10 @@ import 'package:hover/hover.dart';
 import 'auth_state/auth_state.dart';
 import 'auth_state/portal_auth_flow.dart';
 import 'auth_state/chat_engine_auth_flow.dart';
-import 'app_body.dart';
+import 'portal_flutter_body.dart';
 
-class App extends StatelessWidget {
-  App({
+class PortalFlutter extends StatelessWidget {
+  PortalFlutter({
     Key? key,
   }) : super(key: key);
 
@@ -29,7 +29,7 @@ class App extends StatelessWidget {
         builder: (context, authState) {
           switch (authState.currentState) {
             case AuthenticationFlowState.LOGGED_IN:
-              return AppBody(authState: authState);
+              return PortalFlutterBody(authState: authState);
             case AuthenticationFlowState.LOGGED_OUT:
               return const _LoginPage();
             case AuthenticationFlowState.SIGNING_UP:

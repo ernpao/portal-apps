@@ -5,18 +5,18 @@ import 'package:hover/hover.dart';
 
 import 'chat/chat.dart';
 
-class AppBody extends StatefulWidget {
-  const AppBody({
+class PortalFlutterBody extends StatefulWidget {
+  const PortalFlutterBody({
     Key? key,
     required this.authState,
   }) : super(key: key);
   final AuthState authState;
 
   @override
-  State<AppBody> createState() => _AppBodyState();
+  State<PortalFlutterBody> createState() => _PortalFlutterBodyState();
 }
 
-class _AppBodyState extends State<AppBody> {
+class _PortalFlutterBodyState extends State<PortalFlutterBody> {
   late final Widget _content = ChatEngineChatPage(
     secret: widget.authState.secret,
     username: widget.authState.activeUser!.username,
@@ -30,15 +30,14 @@ class _AppBodyState extends State<AppBody> {
     final mediaQuery = HoverResponsiveHelper(context);
     return Container(
       color: Colors.grey.shade200,
-      // drawer: mediaQuery.onPhone ? _Drawer() : null,
       child: Column(
         children: [
           if (_content is! ChatEngineChatPage)
-            _Header(mediaQuery: mediaQuery, authState: widget.authState),
-          Expanded(
-            child: _content,
-            // child: const SizedBox.shrink(),
-          ),
+            _Header(
+              mediaQuery: mediaQuery,
+              authState: widget.authState,
+            ),
+          Expanded(child: _content),
         ],
       ),
     );
