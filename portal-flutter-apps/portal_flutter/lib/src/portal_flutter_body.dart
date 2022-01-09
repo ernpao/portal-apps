@@ -4,6 +4,8 @@ import 'auth_state/auth_state.dart';
 import 'package:hover/hover.dart';
 
 import 'chat/chat.dart';
+import 'feed/feed.dart';
+import 'profile/profile.dart';
 
 class PortalFlutterBody extends StatefulWidget {
   const PortalFlutterBody({
@@ -17,10 +19,29 @@ class PortalFlutterBody extends StatefulWidget {
 }
 
 class _PortalFlutterBodyState extends State<PortalFlutterBody> {
-  late final Widget _content = ChatEngineChatPage(
+  late final Widget _chatPage = ChatEngineChatPage(
     secret: widget.authState.secret,
     username: widget.authState.activeUser!.username,
   );
+
+  final Widget _feedPage = const FeedPage();
+  final Widget _profilePage = const ProfilePage();
+
+  late final List<Widget> _pages = [
+    _feedPage,
+    _chatPage,
+    _profilePage,
+  ];
+
+  int _currentPageIndex = 0;
+
+  void _changePage(int page) {
+    setState(() {
+      _currentPageIndex = page;
+    });
+  }
+
+  Widget get _currentPage => _pages[_currentPageIndex];
 
   @override
   Widget build(BuildContext context) {
@@ -32,12 +53,12 @@ class _PortalFlutterBodyState extends State<PortalFlutterBody> {
       color: Colors.grey.shade200,
       child: Column(
         children: [
-          if (_content is! ChatEngineChatPage)
+          if (_currentPage is! ChatEngineChatPage)
             _Header(
               mediaQuery: mediaQuery,
               authState: widget.authState,
             ),
-          Expanded(child: _content),
+          Expanded(child: _pages[_currentPageIndex]),
         ],
       ),
     );
@@ -64,9 +85,10 @@ class _HeaderState extends State<_Header> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 130,
+      height: 100,
       width: Hover.getScreenWidth(context),
       child: HoverBaseCard(
+        padding: 4,
         child: Row(
           children: [
             Expanded(
@@ -106,8 +128,8 @@ class _HeaderState extends State<_Header> {
   ) async {
     final screenWidth = mediaQuery.screenWidth;
     final screenHeight = mediaQuery.screenHeight;
-    const top = 100.0;
-    const right = 40.0;
+    const top = 54.0;
+    const right = 36.0;
     final left = screenWidth - right;
 
     final items = <_HeaderPopupMenuItem>[];
@@ -186,7 +208,7 @@ class _HeaderPopupMenuItem extends PopupMenuItem<Function> {
                   child: Text(label),
                 ),
               ),
-              Icon(Icons.chevron_right, color: Colors.grey.shade400),
+              // Icon(Icons.chevron_right, color: Colors.grey.shade400),
             ],
           ),
         );

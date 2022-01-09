@@ -8,9 +8,7 @@ import 'auth_state/chat_engine_auth_flow.dart';
 import 'portal_flutter_body.dart';
 
 class PortalFlutter extends StatelessWidget {
-  PortalFlutter({
-    Key? key,
-  }) : super(key: key);
+  PortalFlutter({Key? key}) : super(key: key);
 
   /// State management model for authentication
   final portalAuthFlow = PortalAuthFlow();
