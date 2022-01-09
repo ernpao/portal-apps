@@ -1,0 +1,25 @@
+name: portal_ar_commerce
+description: Portal project client app built with Flutter.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.15.0-268.18.beta <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_html: ^2.1.1
+  flutter_typeahead: ^3.2.0
+  glider_portal:
+    path: ../glider/glider_portal
+  hover:
+    path: ../glider/hover
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^1.0.0
+
+flutter:
+  uses-material-design: true
