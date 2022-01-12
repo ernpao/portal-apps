@@ -57,6 +57,8 @@ class ChatPageStateManagement extends ChangeNotifier {
   /// that is to be displayed on the chat page.
   Chat? get activeChat => _activeChat;
   Chat? _activeChat;
+
+  /// Indicates if the user is currently viewing a chat.
   bool get withActiveChat => activeChat != null;
 
   /// The id of the `activeChat`.

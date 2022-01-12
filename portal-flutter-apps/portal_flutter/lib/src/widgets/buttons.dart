@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hover/hover.dart';
+import 'colors.dart';
 
 const _buttonBorderRadius = 32.0;
 
+/// A basic CTA button. It's color is inherited from the button colors of the app's theme.
 class CallToAction extends StatelessWidget {
   const CallToAction({
     Key? key,
@@ -22,6 +24,7 @@ class CallToAction extends StatelessWidget {
       enabled: enabled,
       text: text,
       onPressed: onPressed,
+      overlayColor: PortalColors.baseDarker,
     );
   }
 }
@@ -42,7 +45,7 @@ class CancelAction extends StatelessWidget {
   Widget build(BuildContext context) {
     return HoverCallToActionButton(
       cornerRadius: _buttonBorderRadius,
-      color: Colors.orangeAccent,
+      color: PortalColors.accent,
       enabled: enabled,
       text: text,
       onPressed: onPressed,

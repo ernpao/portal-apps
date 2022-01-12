@@ -1,79 +1,83 @@
 import 'package:flutter/material.dart';
-import 'package:glider_portal/glider_portal.dart';
-import 'auth_state/auth_state.dart';
 import 'package:hover/hover.dart';
 
-import 'chat/chat.dart';
-import 'feed/feed.dart';
-import 'profile/profile.dart';
+import 'state/auth_state/auth_state.dart';
+import 'state/navigation_state/navigation_state.dart';
+import 'widgets/widgets.dart';
 
 class PortalFlutterBody extends StatefulWidget {
-  const PortalFlutterBody({
-    Key? key,
-    required this.authState,
-  }) : super(key: key);
-  final AuthState authState;
+  const PortalFlutterBody({Key? key}) : super(key: key);
 
   @override
   State<PortalFlutterBody> createState() => _PortalFlutterBodyState();
 }
 
 class _PortalFlutterBodyState extends State<PortalFlutterBody> {
-  late final Widget _chatPage = ChatEngineChatPage(
-    secret: widget.authState.secret,
-    username: widget.authState.activeUser!.username,
-  );
-
-  final Widget _feedPage = const FeedPage();
-  final Widget _profilePage = const ProfilePage();
-
-  late final List<Widget> _pages = [
-    _feedPage,
-    _chatPage,
-    _profilePage,
-  ];
-
-  int _currentPageIndex = 0;
-
-  void _changePage(int page) {
-    setState(() {
-      _currentPageIndex = page;
-    });
+  @override
+  Widget build(BuildContext context) {
+    return NavigationStateConsumer(
+      builder: (context, navigationState) {
+        return Container(
+          color: PortalColors.background,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (navigationState.showHeader) const _Header(),
+              Expanded(child: navigationState.selectedItemContent),
+              const _FooterNavigation(),
+            ],
+          ),
+        );
+      },
+    );
   }
+}
 
-  Widget get _currentPage => _pages[_currentPageIndex];
+class _FooterNavigation extends StatelessWidget {
+  const _FooterNavigation({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (widget.authState.currentState != AuthenticationFlowState.LOGGED_IN) {
-      return const SizedBox.shrink();
-    }
-    final mediaQuery = HoverResponsiveHelper(context);
-    return Container(
-      color: Colors.grey.shade200,
-      child: Column(
-        children: [
-          if (_currentPage is! ChatEngineChatPage)
-            _Header(
-              mediaQuery: mediaQuery,
-              authState: widget.authState,
+    return NavigationStateConsumer(
+      builder: (context, navigationState) {
+        final navItems = navigationState.items;
+        final selectedItemName = navigationState.selectedItemName;
+
+        return Container(
+          color: PortalColors.base,
+          child: HoverBaseCard(
+            color: PortalColors.transparent,
+            margin: 0,
+            cornerRadius: 0,
+            width: HoverResponsiveHelper(context)
+                .clampedScreenWidth(upperLimit: 600),
+            elevation: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: navItems.map((navItem) {
+                final isSelected = navItem.name == selectedItemName;
+                return GestureDetector(
+                  onTap: () {
+                    navigationState.moveToPageByName(navItem.name);
+                  },
+                  child: Icon(
+                    navItem.icon,
+                    color: isSelected
+                        ? PortalColors.baseDarker
+                        : PortalColors.baseDark,
+                  ),
+                );
+              }).toList(),
             ),
-          Expanded(child: _pages[_currentPageIndex]),
-        ],
-      ),
+          ),
+        );
+      },
     );
   }
 }
 
 class _Header extends StatefulWidget {
-  const _Header({
-    Key? key,
-    required this.authState,
-    required this.mediaQuery,
-  }) : super(key: key);
-  final AuthState authState;
-
-  final HoverResponsiveHelper mediaQuery;
+  const _Header({Key? key}) : super(key: key);
 
   @override
   State<_Header> createState() => _HeaderState();
@@ -84,6 +88,7 @@ class _HeaderState extends State<_Header> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = HoverResponsiveHelper(context);
     return SizedBox(
       height: 100,
       width: Hover.getScreenWidth(context),
@@ -94,25 +99,26 @@ class _HeaderState extends State<_Header> {
             Expanded(
               flex: 1,
               child: HoverSearchBar(
-                elevation: 4,
-                backgroundColor: Colors.grey.shade200,
+                backgroundColor: PortalColors.background,
               ),
             ),
             SizedBox(
-              width: widget.mediaQuery.onPhone
+              width: mediaQuery.onPhone
                   ? 0
                   : (Hover.getScreenWidth(context) -
                       HoverResponsiveHelper.defaultPhoneBreakpoint),
             ),
             HoverCircleIconButton(
               onTap: () {
-                _showMenu(context, widget.mediaQuery, widget.authState);
+                _openHeaderMenu(context, mediaQuery);
                 setState(() {
                   _isPopupMenuOpen = true;
                 });
               },
-              color: _isPopupMenuOpen ? Colors.blue : Colors.grey.shade400,
-              iconColor: Colors.white,
+              color: _isPopupMenuOpen
+                  ? PortalColors.base
+                  : PortalColors.inactiveWidgetDarker,
+              iconColor: PortalColors.white,
               iconData: Icons.menu,
             ),
           ],
@@ -121,10 +127,9 @@ class _HeaderState extends State<_Header> {
     );
   }
 
-  void _showMenu(
+  void _openHeaderMenu(
     BuildContext context,
     HoverResponsiveHelper mediaQuery,
-    AuthState authState,
   ) async {
     final screenWidth = mediaQuery.screenWidth;
     final screenHeight = mediaQuery.screenHeight;
@@ -132,10 +137,39 @@ class _HeaderState extends State<_Header> {
     const right = 36.0;
     final left = screenWidth - right;
 
-    final items = <_HeaderPopupMenuItem>[];
+    final authState = Provider.of<AuthState>(context, listen: false);
+
+    const _kIcon = "icon";
+    const _kCallback = "callback";
+    const _kColor = "color";
+
+    final Map<String, Map> menuItems = {
+      "Profile": {
+        _kIcon: Icons.verified_user,
+        _kCallback: () {},
+        _kColor: PortalColors.inactiveWidgetDarker,
+      },
+      "Settings": {
+        _kIcon: Icons.settings,
+        _kCallback: () {},
+        _kColor: PortalColors.inactiveWidgetDarker,
+      },
+      "Privacy Policy": {
+        _kIcon: Icons.privacy_tip,
+        _kCallback: () {},
+        _kColor: PortalColors.inactiveWidgetDarker,
+      },
+      "Logout": {
+        _kIcon: Icons.logout,
+        _kCallback: authState.logOut,
+        _kColor: PortalColors.inactiveWidgetDarker,
+      },
+    };
+
+    final menuItemWidgets = <_HeaderPopupMenuItem>[];
 
     menuItems.forEach((label, menuItem) {
-      items.add(
+      menuItemWidgets.add(
         _HeaderPopupMenuItem(
           label: label,
           icon: menuItem[_kIcon],
@@ -149,7 +183,7 @@ class _HeaderState extends State<_Header> {
       context: context,
       position: RelativeRect.fromLTRB(left, top, right, screenHeight),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      items: items,
+      items: menuItemWidgets,
     );
 
     callback?.call();
@@ -157,33 +191,6 @@ class _HeaderState extends State<_Header> {
       _isPopupMenuOpen = false;
     });
   }
-
-  late final Map<String, Map> menuItems = {
-    "Profile": {
-      _kIcon: Icons.verified_user,
-      _kCallback: () {},
-      _kColor: Colors.grey.shade400,
-    },
-    "Settings": {
-      _kIcon: Icons.settings,
-      _kCallback: () {},
-      _kColor: Colors.grey.shade400,
-    },
-    "Privacy Policy": {
-      _kIcon: Icons.privacy_tip,
-      _kCallback: () {},
-      _kColor: Colors.grey.shade400,
-    },
-    "Logout": {
-      _kIcon: Icons.logout,
-      _kCallback: widget.authState.logOut,
-      _kColor: Colors.grey.shade400,
-    },
-  };
-
-  static const _kIcon = "icon";
-  static const _kCallback = "callback";
-  static const _kColor = "color";
 }
 
 class _HeaderPopupMenuItem extends PopupMenuItem<Function> {
@@ -200,7 +207,7 @@ class _HeaderPopupMenuItem extends PopupMenuItem<Function> {
               HoverCircleIconButton(
                 iconData: icon,
                 color: iconColor,
-                iconColor: Colors.white,
+                iconColor: PortalColors.white,
               ),
               Expanded(
                 child: Padding(
@@ -208,7 +215,6 @@ class _HeaderPopupMenuItem extends PopupMenuItem<Function> {
                   child: Text(label),
                 ),
               ),
-              // Icon(Icons.chevron_right, color: Colors.grey.shade400),
             ],
           ),
         );

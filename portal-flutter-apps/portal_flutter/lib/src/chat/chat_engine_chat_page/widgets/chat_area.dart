@@ -75,7 +75,7 @@ class _UserChatsListTile extends StatelessWidget {
       return GestureDetector(
         onTap: onTap,
         child: HoverBaseCard(
-          color: isSelected ? Colors.grey.shade200 : null,
+          color: isSelected ? PortalColors.inactiveWidget : null,
           elevation: isSelected ? null : 0,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -379,8 +379,9 @@ class _ChatAreaTextFieldState extends State<_ChatAreaTextField> {
           enabled: !_awaitingResponse,
           controller: _controller,
           focusNode: _focusNode,
-          backgroundColor:
-              _awaitingResponse ? Colors.grey.shade200 : Colors.white,
+          backgroundColor: _awaitingResponse
+              ? PortalColors.inactiveWidget
+              : PortalColors.white,
           clearOnSubmit: true,
           onSubmitted: (message) async {
             if (message.isNotEmpty) {
@@ -408,18 +409,10 @@ class _ChatAreaHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        HoverTitle(
-          chat.title,
-          topPadding: 24,
-          bottomPadding: 8,
-          color: Colors.blue,
-          fontWeight: FontWeight.w900,
-        ),
+        PortalTitle(chat.title),
         if (chat.lastMessage.created != null)
-          HoverText(
+          PortalCaptionText(
             "Active:  ${chat.lastMessage.created!.formatDateTimeWithoutSeconds}",
-            color: Colors.grey.shade400,
-            bottomPadding: 24.0,
           )
       ],
     );
@@ -466,7 +459,7 @@ class _ChatAreaMessagesListView extends StatelessWidget {
                   rightPadding: 8,
                   topPadding: 2,
                   bottomPadding: 2,
-                  color: messageIsfromMyself ? Colors.blue : null,
+                  color: messageIsfromMyself ? PortalColors.base : null,
                   elevation: 4,
                   child: Row(
                     children: [
@@ -475,8 +468,8 @@ class _ChatAreaMessagesListView extends StatelessWidget {
                         style: {
                           "*": Style(
                             color: messageIsfromMyself
-                                ? Colors.white
-                                : Colors.black,
+                                ? PortalColors.white
+                                : PortalColors.black,
                           )
                         },
                         data: message.text,

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:glider_portal/glider_portal.dart';
 import 'package:hover/hover.dart';
 
-import 'auth_state/auth_state.dart';
-import 'auth_state/portal_auth_flow.dart';
-import 'auth_state/chat_engine_auth_flow.dart';
+import 'chat/chat.dart';
+import 'feed/feed.dart';
 import 'portal_flutter_body.dart';
+import 'profile/profile.dart';
+import 'state/state.dart';
 
 class PortalFlutter extends StatelessWidget {
   PortalFlutter({Key? key}) : super(key: key);
@@ -14,20 +16,41 @@ class PortalFlutter extends StatelessWidget {
   final portalAuthFlow = PortalAuthFlow();
   final chatEngineAuthFlow = ChatEngineAuthFlow();
 
+  final navigationState = NavigationState(
+    initialContentIndex: 0,
+    items: [
+      NavigationItem(
+        icon: FontAwesomeIcons.solidUser,
+        name: "Profile",
+        content: const ProfilePage(),
+      ),
+      NavigationItem(
+        icon: FontAwesomeIcons.thLarge,
+        name: "Feed",
+        content: const FeedPage(),
+      ),
+      NavigationItem(
+        icon: FontAwesomeIcons.solidComment,
+        name: "Chat",
+        content: const ChatEngineChatPage(),
+        showHeader: false,
+      ),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
     return Application(
       providers: [
-        ChangeNotifierProvider<AuthState>.value(
-          value: chatEngineAuthFlow,
-        ),
+        ChangeNotifierProvider<AuthState>.value(value: chatEngineAuthFlow),
+        ChangeNotifierProvider<NavigationState>.value(value: navigationState),
       ],
       theme: HoverThemeData.light.data,
       child: AuthStateConsumer(
         builder: (context, authState) {
           switch (authState.currentState) {
             case AuthenticationFlowState.LOGGED_IN:
-              return PortalFlutterBody(authState: authState);
+              return const PortalFlutterBody();
             case AuthenticationFlowState.LOGGED_OUT:
               return const _LoginPage();
             case AuthenticationFlowState.SIGNING_UP:

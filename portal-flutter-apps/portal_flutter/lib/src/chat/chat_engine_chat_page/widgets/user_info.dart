@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:glider_portal/glider_portal.dart';
 import 'package:hover/hover.dart';
 
+import '../../../widgets/widgets.dart';
+
 class UserAvatar extends StatelessWidget {
   const UserAvatar(
     this.user, {
@@ -13,13 +15,13 @@ class UserAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final noAvatar = user.avatar == null;
     return CircleAvatar(
-      backgroundColor: noAvatar ? Colors.blue : Colors.transparent,
+      backgroundColor: noAvatar ? PortalColors.base : PortalColors.transparent,
       child: noAvatar
           ? Center(
               child: HoverText(
                 user.initials,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: PortalColors.white,
               ),
             )
           : const SizedBox.shrink(),

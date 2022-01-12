@@ -73,7 +73,7 @@ class _CreateNewChatModalState extends State<CreateNewChatModal> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     HoverHeading("Create New Chat"),
-                    HoverText("Search for users to add to the chat"),
+                    // HoverText("Search for users to add to the chat"),
                   ],
                 ),
                 Positioned(
@@ -89,16 +89,21 @@ class _CreateNewChatModalState extends State<CreateNewChatModal> {
             /// Username input and autocomplete options
 
             HoverBaseCard(
-              color: Colors.grey.shade200,
+              color: PortalColors.searchBackground,
+              padding: 8,
               child: TypeAheadField<Person>(
                 suggestionsBoxDecoration: SuggestionsBoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                 ),
                 textFieldConfiguration: const TextFieldConfiguration(
                   decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: "Search for users to start a chat with",
-                  ),
+                      border: InputBorder.none,
+                      hintText: "Search for users to start a chat with",
+                      hintStyle: TextStyle(
+                        fontSize: 14,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      contentPadding: EdgeInsets.all(8)),
                 ),
                 suggestionsCallback: _getUsernameSuggestions,
                 itemBuilder: (context, userData) {
