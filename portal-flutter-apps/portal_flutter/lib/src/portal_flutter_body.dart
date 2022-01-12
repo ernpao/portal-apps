@@ -43,33 +43,37 @@ class _FooterNavigation extends StatelessWidget {
         final navItems = navigationState.items;
         final selectedItemName = navigationState.selectedItemName;
 
-        return Container(
-          color: PortalColors.base,
-          child: HoverBaseCard(
-            color: PortalColors.transparent,
-            margin: 0,
-            cornerRadius: 0,
-            width: HoverResponsiveHelper(context)
-                .clampedScreenWidth(upperLimit: 600),
-            elevation: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: navItems.map((navItem) {
-                final isSelected = navItem.name == selectedItemName;
-                return GestureDetector(
-                  onTap: () {
-                    navigationState.moveToPageByName(navItem.name);
-                  },
-                  child: Icon(
-                    navItem.icon,
-                    color: isSelected
-                        ? PortalColors.baseDarker
-                        : PortalColors.baseDark,
-                  ),
-                );
-              }).toList(),
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            HoverBaseCard(
+              // color: PortalColors.transparent,
+
+              color: PortalColors.base,
+              width: HoverResponsiveHelper(context)
+                  .clampedScreenWidth(upperLimit: 600),
+              // margin: 0,
+              // cornerRadius: 0,
+              // elevation: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: navItems.map((navItem) {
+                  final isSelected = navItem.name == selectedItemName;
+                  return GestureDetector(
+                    onTap: () {
+                      navigationState.moveToPageByName(navItem.name);
+                    },
+                    child: Icon(
+                      navItem.icon,
+                      color: isSelected
+                          ? PortalColors.baseDarker
+                          : PortalColors.baseDark,
+                    ),
+                  );
+                }).toList(),
+              ),
             ),
-          ),
+          ],
         );
       },
     );
