@@ -20,6 +20,12 @@ class PortalFlutter extends StatelessWidget {
     initialContentIndex: 0,
     items: [
       NavigationItem(
+        icon: FontAwesomeIcons.solidComment,
+        name: "Chat",
+        content: const ChatEngineChatPage(),
+        showHeader: false,
+      ),
+      NavigationItem(
         icon: FontAwesomeIcons.solidUser,
         name: "Profile",
         content: const ProfilePage(),
@@ -28,12 +34,6 @@ class PortalFlutter extends StatelessWidget {
         icon: FontAwesomeIcons.thLarge,
         name: "Feed",
         content: const FeedPage(),
-      ),
-      NavigationItem(
-        icon: FontAwesomeIcons.solidComment,
-        name: "Chat",
-        content: const ChatEngineChatPage(),
-        showHeader: false,
       ),
     ],
   );

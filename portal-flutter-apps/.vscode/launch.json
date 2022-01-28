@@ -5,6 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "portal_commerce",
+            "type": "dart",
+            "request": "launch",
+            "program": "portal_commerce/lib/main.dart"
+        },
+        {
             "name": "portal_flutter",
             "cwd": "portal_flutter",
             "request": "launch",

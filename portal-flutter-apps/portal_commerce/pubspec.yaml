@@ -1,0 +1,25 @@
+name: portal_commerce
+description: Portal commerce client.
+
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.13.0 <3.0.0"
+  
+dependencies:
+  flutter:
+    sdk: flutter
+  font_awesome_flutter: ^9.2.0
+  glider_portal:
+    path: ../glider/glider_portal
+  hover:
+    path: ../glider/hover
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^1.0.0
+  
+flutter:
+  uses-material-design: true
