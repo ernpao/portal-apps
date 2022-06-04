@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:glider_portal/glider_portal.dart';
 import 'package:hover/hover.dart';
 import 'theme_constants.dart';
@@ -109,7 +110,7 @@ class _IndexState extends State<Index> {
           ),
           top: _isHeaderVisible ? 0 : -_headerHeight,
           left: 0,
-          child: const Header(),
+          child: const CustomHeader(),
         ),
         AnimatedPositioned(
           duration: const Duration(
@@ -117,60 +118,90 @@ class _IndexState extends State<Index> {
           ),
           bottom: _isFooterVisible ? 0 : -_footerHeight,
           left: 0,
-          child: const Footer(),
+          child: const CustomFooter(),
         ),
       ],
     );
   }
 }
 
-class Header extends StatelessWidget {
-  const Header({Key? key}) : super(key: key);
+class CustomHeader extends StatelessWidget {
+  const CustomHeader({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final mediaQuery = HoverResponsiveHelper(context);
-    return HoverBaseCard(
-      padding: 0,
-      margin: 0,
-      child: Container(
-        height: _headerHeight,
-        width: mediaQuery.screenWidth,
-        decoration: const BoxDecoration(
-          gradient: ThemeConstants.themeGradient,
-        ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned(
-              // bottom: -36.0,
-              child: HoverSearchBar(
-                hintText: "What are you looking for?",
-              ),
-            ),
-          ],
-        ),
+    return Container(
+      height: _headerHeight,
+      width: mediaQuery.screenWidth,
+      decoration: const BoxDecoration(
+        gradient: ThemeConstants.themeGradient,
+      ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: const [
+          Positioned(child: CommerceSearchBar()),
+        ],
       ),
     );
   }
 }
 
-class Footer extends StatelessWidget {
-  const Footer({Key? key}) : super(key: key);
+class CustomFooter extends StatelessWidget {
+  const CustomFooter({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final mediaQuery = HoverResponsiveHelper(context);
+    return Container(
+      height: _footerHeight,
+      width: mediaQuery.screenWidth,
+      decoration: const BoxDecoration(
+        gradient: ThemeConstants.themeGradient,
+      ),
+      child: Row(),
+    );
+  }
+}
+
+class CommerceSearchBar extends StatelessWidget {
+  const CommerceSearchBar({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return HoverBaseCard(
-      padding: 0,
+      topPadding: 0,
+      bottomPadding: 0,
       margin: 0,
-      child: Container(
-        height: _footerHeight,
-        width: mediaQuery.screenWidth,
-        decoration: const BoxDecoration(
-          gradient: ThemeConstants.themeGradient,
+      child: TypeAheadField<SearchSuggestion>(
+        textFieldConfiguration: const TextFieldConfiguration(
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            hintText: "What are you looking for?",
+          ),
         ),
+        suggestionsCallback: (searchQuery) async {
+          return _fetchSearchSuggestions(searchQuery);
+        },
+        itemBuilder: (context, searchSuggestion) => Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(searchSuggestion.name),
+        ),
+        onSuggestionSelected: (searchSuggestion) {},
       ),
     );
   }
+
+  Future<List<SearchSuggestion>> _fetchSearchSuggestions(String query) async {
+    return [
+      SearchSuggestion("Test Product 1"),
+      SearchSuggestion("Test Product 2"),
+      SearchSuggestion("Test Product 3"),
+    ];
+  }
+}
+
+class SearchSuggestion {
+  final String name;
+  SearchSuggestion(this.name);
 }
